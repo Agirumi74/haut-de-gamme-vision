@@ -2,41 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Luxury Beauty Brand Design System - Artisan Beauty */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Primary Luxury Palette */
+    --background: 30 15% 98%;
+    --foreground: 25 25% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Cards & Surfaces */
+    --card: 30 20% 97%;
+    --card-foreground: 25 25% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 30 20% 97%;
+    --popover-foreground: 25 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Brand Colors - Luxurious Gold & Champagne */
+    --primary: 35 65% 55%;
+    --primary-foreground: 30 15% 98%;
+    --primary-glow: 40 75% 65%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Warm Champagne */
+    --secondary: 35 35% 88%;
+    --secondary-foreground: 25 25% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted Tones */
+    --muted: 30 20% 92%;
+    --muted-foreground: 25 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Rose Gold */
+    --accent: 15 45% 75%;
+    --accent-foreground: 25 25% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Luxury Gradients */
+    --gradient-luxury: linear-gradient(135deg, hsl(35, 65%, 55%), hsl(40, 75%, 65%), hsl(15, 45%, 75%));
+    --gradient-hero: linear-gradient(180deg, hsl(30, 15%, 98%) 0%, hsl(35, 35%, 95%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(30, 20%, 97%) 0%, hsl(35, 25%, 94%) 100%);
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Shadows & Effects */
+    --shadow-luxury: 0 20px 40px -12px hsl(35 65% 55% / 0.25);
+    --shadow-card: 0 10px 30px -10px hsl(25 25% 15% / 0.08);
+    --shadow-glow: 0 0 50px hsl(35 65% 55% / 0.3);
 
-    --radius: 0.5rem;
+    /* Interactive States */
+    --hover-glow: 0 0 30px hsl(35 65% 55% / 0.4);
+
+    /* System Colors */
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 30 15% 98%;
+
+    --border: 35 25% 90%;
+    --input: 35 25% 90%;
+    --ring: 35 65% 55%;
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +119,70 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body antialiased;
+    background: var(--gradient-hero);
+  }
+
+  /* Custom Typography */
+  .font-elegant {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Luxury Effects */
+  .luxury-shadow {
+    box-shadow: var(--shadow-luxury);
+  }
+
+  .card-shadow {
+    box-shadow: var(--shadow-card);
+  }
+
+  .glow-effect {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .hover-glow {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-glow:hover {
+    box-shadow: var(--hover-glow);
+    transform: translateY(-2px);
+  }
+
+  /* Custom Gradients */
+  .bg-gradient-luxury {
+    background: var(--gradient-luxury);
+  }
+
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+
+  /* Animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 20px hsl(35 65% 55% / 0.2); }
+    to { box-shadow: 0 0 30px hsl(35 65% 55% / 0.4); }
   }
 }
