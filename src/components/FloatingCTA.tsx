@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Calendar, X } from "lucide-react";
+import BookingModal from "./BookingModal";
 
 const FloatingCTA = () => {
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -59,15 +61,14 @@ const FloatingCTA = () => {
             </p>
             
             <div className="space-y-2">
-              <a href="#contact">
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  className="w-full bg-white text-primary hover:bg-white/90"
-                >
-                  Prendre RDV
-                </Button>
-              </a>
+               <Button 
+                 variant="secondary" 
+                 size="sm" 
+                 className="w-full bg-white text-primary hover:bg-white/90"
+                 onClick={() => setIsBookingOpen(true)}
+               >
+                 Prendre RDV
+               </Button>
               <a href="tel:+33123456789">
                 <Button 
                   variant="outline" 
@@ -81,6 +82,11 @@ const FloatingCTA = () => {
           </div>
         )}
       </div>
+      
+      <BookingModal 
+        isOpen={isBookingOpen} 
+        onClose={() => setIsBookingOpen(false)} 
+      />
     </div>
   );
 };

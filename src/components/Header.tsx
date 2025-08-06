@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Menu, X } from "lucide-react";
+import BookingModal from "./BookingModal";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   const navItems = [
     { label: "Accueil", href: "#" },
@@ -45,7 +47,11 @@ const Header = () => {
 
           {/* CTA Button */}
           <div className="hidden lg:block">
-            <Button variant="default" className="bg-gradient-luxury text-white hover-glow">
+            <Button 
+              variant="default" 
+              className="bg-gradient-luxury text-white hover-glow"
+              onClick={() => setIsBookingOpen(true)}
+            >
               Réserver
             </Button>
           </div>
@@ -73,13 +79,22 @@ const Header = () => {
                   {item.label}
                 </a>
               ))}
-              <Button variant="default" className="bg-gradient-luxury text-white mt-4">
-                Réserver
-              </Button>
+               <Button 
+                 variant="default" 
+                 className="bg-gradient-luxury text-white mt-4"
+                 onClick={() => setIsBookingOpen(true)}
+               >
+                 Réserver
+               </Button>
             </nav>
           </div>
         )}
       </div>
+      
+      <BookingModal 
+        isOpen={isBookingOpen} 
+        onClose={() => setIsBookingOpen(false)} 
+      />
     </header>
   );
 };
