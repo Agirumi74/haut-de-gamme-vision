@@ -95,7 +95,21 @@ const Services = () => {
                   
                   <div className="pt-4 border-t border-border/50">
                     <p className="font-semibold text-primary mb-3">{service.price}</p>
-                    <Button variant="outline" size="sm" className="w-full border-primary text-primary hover:bg-primary hover:text-white">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full border-primary text-primary hover:bg-primary hover:text-white"
+                      onClick={() => {
+                        let route = '';
+                        switch(index) {
+                          case 0: route = '/services/maquillage-professionnel'; break;
+                          case 1: route = '/services/formations'; break;
+                          case 2: route = '/services/consultations-vip'; break;
+                          case 3: route = '/services/relooking-complet'; break;
+                        }
+                        window.location.href = route;
+                      }}
+                    >
                       En savoir plus
                     </Button>
                   </div>
