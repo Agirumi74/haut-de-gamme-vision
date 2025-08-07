@@ -65,8 +65,8 @@ const FloatingCTA = () => {
                  variant="secondary" 
                  size="sm" 
                  className="w-full bg-white text-primary hover:bg-white/90"
-                 onClick={() => setIsBookingOpen(true)}
-               >
+                  onClick={() => window.location.href = "/reservation"}
+                >
                  Prendre RDV
                </Button>
               <a href="tel:+33123456789">

@@ -9,6 +9,7 @@ import MaquillageProPage from "./pages/services/MaquillageProPage";
 import FormationsPage from "./pages/services/FormationsPage";
 import ConsultationsVIPPage from "./pages/services/ConsultationsVIPPage";
 import RelookingPage from "./pages/services/RelookingPage";
+import ReservationPage from "./pages/ReservationPage";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/reservation" element={<ReservationPage />} />
           <Route path="/services/maquillage-professionnel" element={<MaquillageProPage />} />
           <Route path="/services/formations" element={<FormationsPage />} />
           <Route path="/services/consultations-vip" element={<ConsultationsVIPPage />} />

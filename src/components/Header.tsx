@@ -50,7 +50,7 @@ const Header = () => {
             <Button 
               variant="default" 
               className="bg-gradient-luxury text-white hover-glow"
-              onClick={() => setIsBookingOpen(true)}
+              onClick={() => window.location.href = "/reservation"}
             >
               Réserver
             </Button>
@@ -82,8 +82,8 @@ const Header = () => {
                <Button 
                  variant="default" 
                  className="bg-gradient-luxury text-white mt-4"
-                 onClick={() => setIsBookingOpen(true)}
-               >
+                  onClick={() => window.location.href = "/reservation"}
+                >
                  Réserver
                </Button>
             </nav>
