@@ -96,10 +96,20 @@ const Contact = () => {
                   Suivez-moi
                 </h3>
                 <div className="flex space-x-4">
-                  <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="border-primary text-primary hover:bg-primary hover:text-white"
+                    onClick={() => window.open('https://instagram.com/artisanbeauty', '_blank')}
+                  >
                     <Instagram className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="border-primary text-primary hover:bg-primary hover:text-white"
+                    onClick={() => window.open('https://facebook.com/artisanbeauty', '_blank')}
+                  >
                     <Facebook className="w-4 h-4" />
                   </Button>
                 </div>
@@ -114,19 +124,22 @@ const Contact = () => {
                 <h3 className="font-elegant text-2xl font-semibold text-foreground mb-6">
                   Demande de Rendez-vous
                 </h3>
-                <form className="space-y-6">
+                <form className="space-y-6" onSubmit={(e) => {
+                  e.preventDefault();
+                  alert("Votre demande a été envoyée ! Nous vous contacterons sous 24h.");
+                }}>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Prénom *
                       </label>
-                      <Input placeholder="Votre prénom" className="border-border/50" />
+                      <Input placeholder="Votre prénom" className="border-border/50" required />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Nom *
                       </label>
-                      <Input placeholder="Votre nom" className="border-border/50" />
+                      <Input placeholder="Votre nom" className="border-border/50" required />
                     </div>
                   </div>
                   
@@ -135,7 +148,7 @@ const Contact = () => {
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Email *
                       </label>
-                      <Input type="email" placeholder="votre@email.com" className="border-border/50" />
+                      <Input type="email" placeholder="votre@email.com" className="border-border/50" required />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">
@@ -149,12 +162,12 @@ const Contact = () => {
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Service souhaité *
                     </label>
-                    <select className="w-full px-3 py-2 border border-border/50 rounded-md bg-background text-foreground">
-                      <option>Sélectionnez un service</option>
-                      <option>Maquillage professionnel</option>
-                      <option>Formation beauté</option>
-                      <option>Consultation VIP</option>
-                      <option>Relooking complet</option>
+                    <select className="w-full px-3 py-2 border border-border/50 rounded-md bg-background text-foreground" required>
+                      <option value="">Sélectionnez un service</option>
+                      <option value="maquillage">Maquillage professionnel</option>
+                      <option value="formation">Formation beauté</option>
+                      <option value="consultation">Consultation VIP</option>
+                      <option value="relooking">Relooking complet</option>
                     </select>
                   </div>
                   
@@ -162,7 +175,7 @@ const Contact = () => {
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Date souhaitée
                     </label>
-                    <Input type="date" className="border-border/50" />
+                    <Input type="date" className="border-border/50" min={new Date().toISOString().split('T')[0]} />
                   </div>
                   
                   <div>

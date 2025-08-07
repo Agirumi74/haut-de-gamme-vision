@@ -63,7 +63,7 @@ const Gallery = () => {
     : portfolioItems.filter(item => item.category === activeCategory);
 
   return (
-    <section id="galerie" className="py-20">
+    <section id="gallery" className="py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <p className="text-primary font-medium tracking-wide uppercase text-sm mb-4">

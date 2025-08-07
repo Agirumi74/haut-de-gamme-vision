@@ -100,14 +100,13 @@ const Services = () => {
                       size="sm" 
                       className="w-full border-primary text-primary hover:bg-primary hover:text-white"
                       onClick={() => {
-                        let route = '';
-                        switch(index) {
-                          case 0: route = '/services/maquillage-professionnel'; break;
-                          case 1: route = '/services/formations'; break;
-                          case 2: route = '/services/consultations-vip'; break;
-                          case 3: route = '/services/relooking-complet'; break;
-                        }
-                        window.location.href = route;
+                        const routes = [
+                          '/services/maquillage-professionnel',
+                          '/services/formations', 
+                          '/services/consultations-vip',
+                          '/services/relooking-complet'
+                        ];
+                        window.location.href = routes[index];
                       }}
                     >
                       En savoir plus
