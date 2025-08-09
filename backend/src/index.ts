@@ -49,6 +49,10 @@ function getStaticPath() {
     // For Render deployment - when backend runs from project root
     path.join(process.cwd(), 'dist'),
     
+    // For Render deployment - specific Render structure
+    '/opt/render/project/src/dist',
+    path.join('/opt/render/project/src', 'dist'),
+    
     // For Render deployment - alternative paths
     path.join(process.cwd(), '../dist'),
     path.join(__dirname, '../../../dist'),
@@ -62,6 +66,8 @@ function getStaticPath() {
   console.log(`🔍 Searching for static files...`);
   console.log(`📍 Current working directory: ${process.cwd()}`);
   console.log(`📍 Backend __dirname: ${__dirname}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🏢 Platform: ${process.env.RENDER ? 'Render' : 'Local'}`);
   
   for (const staticPath of possiblePaths) {
     try {
