@@ -98,15 +98,28 @@ The project includes a `render.yaml` file for automatic deployment:
 
 #### Build Process
 
-1. `npm install` - Install dependencies
-2. `npm run build:production` - Build both frontend and backend
-3. `node backend/dist/index.js` - Start the production server
+The build process follows a specific order to ensure the backend can serve the frontend correctly:
+
+1. `npm run build` - Build the frontend (creates `dist/` folder at project root)
+2. `npm run build:backend` - Build the backend (creates `backend/dist/` folder)
+
+**Important:** The frontend must be built before the backend, as the backend needs to reference the frontend's built files.
 
 The server will:
+- Build frontend files to `dist/` at project root
+- Build backend files to `backend/dist/`  
 - Serve the React frontend at the root URL
 - Provide API endpoints at `/api/*`
 - Handle React Router fallback for SPA routing
 - Serve static assets from the built frontend
+
+**Directory Structure After Build:**
+```
+├── dist/                  # Frontend build (served by backend)
+├── backend/
+│   └── dist/             # Backend build
+└── ...
+```
 
 ## How to Edit This Code
 

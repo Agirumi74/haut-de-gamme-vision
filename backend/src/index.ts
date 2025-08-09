@@ -43,7 +43,8 @@ function getStaticPath() {
   // Try multiple possible locations for the frontend build files
   const possiblePaths = [
     path.join(__dirname, '../../dist'),           // For local development
-    path.join(process.cwd(), 'dist'),             // For Render deployment
+    path.join(process.cwd(), '../dist'),          // For Render deployment (backend runs from backend/ subdirectory)
+    path.join(process.cwd(), 'dist'),             // Alternative: if backend runs from project root
     path.join(__dirname, '../../../dist'),        // Alternative path
     path.join(process.cwd(), 'frontend/build'),   // Alternative frontend structure
     path.join(process.cwd(), 'client/build'),     // Alternative client structure
