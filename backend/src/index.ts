@@ -2,11 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { authRoutes } from './routes/auth';
-import { formationRoutes } from './routes/formations';
-import { serviceRoutes } from './routes/services';
-import { reservationRoutes } from './routes/reservations';
-import { clientRoutes } from './routes/clients';
+import { authRoutes } from './routes/auth.js';
+import { formationRoutes } from './routes/formations.js';
+import { serviceRoutes } from './routes/services.js';
+import { reservationRoutes } from './routes/reservations.js';
+import { clientRoutes } from './routes/clients.js';
 
 dotenv.config();
 
