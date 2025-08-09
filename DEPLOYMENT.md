@@ -69,9 +69,11 @@ If you encounter "index.html not found" errors:
 **Problem**: "index.html not found at: /opt/render/project/src/dist/index.html"
 
 **Solution**: 
+- This specific Render path is now included in the backend's static file resolution
 - Ensure the build command runs successfully: `npm run build:production`
 - Verify the frontend build creates files in the `dist/` directory
 - Check that the build script includes both frontend and backend builds
+- The backend will automatically detect and serve files from the Render-specific path structure
 
 **Problem**: Static assets (CSS/JS) not loading
 
