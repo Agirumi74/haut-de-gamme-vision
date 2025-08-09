@@ -1,12 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Textarea } from "./ui/textarea";
-import { Calendar, Clock, User, Phone, Mail, Sparkles } from "lucide-react";
+import { Calendar, Clock, User, Phone, Mail, Sparkles, Loader2 } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
+import { Alert, AlertDescription } from "./ui/alert";
+import { apiClient } from "@/lib/api";
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  isActive: boolean;
+}
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -24,13 +35,36 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
     message: ""
   });
 
-  const services = [
-    { value: "maquillage-mariee", label: "Maquillage Mariée - 150€", duration: "2h" },
-    { value: "maquillage-soiree", label: "Maquillage Soirée - 80€", duration: "1h30" },
-    { value: "formation-particuliere", label: "Formation Particulière - 200€", duration: "3h" },
-    { value: "formation-groupe", label: "Formation Groupe - 300€", duration: "4h" },
-    { value: "relooking-complet", label: "Relooking Complet - 250€", duration: "3h" }
-  ];
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadServices();
+    }
+  }, [isOpen]);
+
+  const loadServices = async () => {
+    try {
+      setLoading(true);
+      const data = await apiClient.getServices();
+      setServices(data);
+    } catch (err) {
+      setError('Erreur lors du chargement des services');
+      console.error('Error loading services:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0 && mins > 0) return `${hours}h${mins}`;
+    if (hours > 0) return `${hours}h`;
+    return `${mins}min`;
+  };
 
   const heures = [
     "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -39,22 +73,17 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Ici vous pourriez intégrer avec un système de réservation
-    console.log("Réservation:", formData);
-    alert("Votre demande de réservation a été envoyée ! Nous vous contacterons sous 24h.");
+    // Redirect to the full reservation page instead of handling it here
+    const selectedService = services.find(s => s.id === formData.service);
+    if (selectedService) {
+      window.location.href = `/reservation?service=${selectedService.id}`;
+    } else {
+      window.location.href = '/reservation';
+    }
     onClose();
-    setFormData({
-      nom: "",
-      email: "",
-      telephone: "",
-      service: "",
-      date: "",
-      heure: "",
-      message: ""
-    });
   };
 
-  const selectedService = services.find(s => s.value === formData.service);
+  const selectedService = services.find(s => s.id === formData.service);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -135,27 +164,43 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
               
               <div className="space-y-2">
                 <Label htmlFor="service">Service souhaité *</Label>
-                <Select onValueChange={(value) => setFormData({...formData, service: value})}>
-                  <SelectTrigger className="border-border/50">
-                    <SelectValue placeholder="Choisissez votre service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {services.map((service) => (
-                      <SelectItem key={service.value} value={service.value}>
-                        <div className="flex justify-between items-center w-full">
-                          <span>{service.label}</span>
-                          <span className="text-xs text-muted-foreground ml-2">({service.duration})</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {loading ? (
+                  <div className="flex items-center justify-center p-4 border border-border/50 rounded-md">
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <span className="text-sm text-muted-foreground">Chargement...</span>
+                  </div>
+                ) : error ? (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                ) : (
+                  <Select onValueChange={(value) => setFormData({...formData, service: value})}>
+                    <SelectTrigger className="border-border/50">
+                      <SelectValue placeholder="Choisissez votre service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {services.map((service) => (
+                        <SelectItem key={service.id} value={service.id}>
+                          <div className="flex justify-between items-center w-full">
+                            <span>{service.name} - {service.price}€</span>
+                            <span className="text-xs text-muted-foreground ml-2">
+                              ({formatDuration(service.duration)})
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               {selectedService && (
                 <div className="p-3 bg-primary/10 rounded-lg">
                   <p className="text-sm text-primary font-medium">
-                    Durée estimée : {selectedService.duration}
+                    Durée estimée : {formatDuration(selectedService.duration)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedService.description}
                   </p>
                 </div>
               )}

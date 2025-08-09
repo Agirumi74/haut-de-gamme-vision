@@ -1,22 +1,9 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { db } from '../database';
 
 const router = express.Router();
-
-// Mock user data (replace with Prisma when available)
-const mockUsers = [
-  {
-    id: '1',
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@hautdegamme.com',
-    password: '$2b$10$gw1iD9tX2a5EECUYDXC0CeZyGr7LlS42GTQg7xsppfM4zK.E2uB.a', // "admin123"
-    role: 'ADMIN' as const,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
 
 // Login
 router.post('/login', async (req, res) => {
@@ -27,8 +14,8 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Find user (replace with Prisma query)
-    const user = mockUsers.find(u => u.email === email);
+    // Find user
+    const user = db.getUserByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -77,7 +64,7 @@ router.get('/me', async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
-    const user = mockUsers.find(u => u.id === decoded.id);
+    const user = db.getUserById(decoded.id);
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });

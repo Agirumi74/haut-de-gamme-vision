@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, addDays, isSameDay, isAfter, isBefore } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ArrowLeft, Calendar, Clock, User, CreditCard, CheckCircle, Star } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, User, CreditCard, CheckCircle, Star, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,15 +10,42 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/lib/api";
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  isActive: boolean;
+}
+
+interface Formation {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  level: string;
+  price: number;
+  maxStudents: number;
+  isActive: boolean;
+}
 
 const ReservationPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedService, setSelectedService] = useState<any>(null);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedFormation, setSelectedFormation] = useState<Formation | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [services, setServices] = useState<Service[]>([]);
+  const [formations, setFormations] = useState<Formation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [customerInfo, setCustomerInfo] = useState({
     prenom: "",
     nom: "",
@@ -27,42 +54,108 @@ const ReservationPage = () => {
     message: ""
   });
 
-  const services = [
-    {
-      id: "maquillage-mariee",
-      title: "Maquillage Mariée",
-      price: 150,
-      duration: "2h",
-      description: "Maquillage longue tenue pour votre jour J",
-      features: ["Essai inclus", "Retouches", "Photos", "Produits haut de gamme"]
-    },
-    {
-      id: "maquillage-soiree",
-      title: "Maquillage Soirée",
-      price: 80,
-      duration: "1h30",
-      description: "Look glamour pour vos événements",
-      features: ["Conseils personnalisés", "Produits longue tenue", "Retouches"]
-    },
-    {
-      id: "formation-particuliere",
-      title: "Formation Particulière",
-      price: 200,
-      duration: "3h",
-      description: "Cours privé personnalisé",
-      features: ["Support de cours", "Kit de démarrage", "Suivi personnalisé"]
-    },
-    {
-      id: "consultation-vip",
-      title: "Consultation VIP",
-      price: 250,
-      duration: "2h30",
-      description: "Analyse complète et conseils experts",
-      features: ["Analyse morphologique", "Sélection produits", "Routine personnalisée"]
-    }
-  ];
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [servicesData, formationsData] = await Promise.all([
+          apiClient.getServices(),
+          apiClient.getFormations()
+        ]);
+        
+        setServices(servicesData);
+        setFormations(formationsData);
+        
+        // Check if service or formation is pre-selected via URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const serviceId = urlParams.get('service');
+        const formationId = urlParams.get('formation');
+        
+        if (serviceId) {
+          const preSelectedService = servicesData.find(s => s.id === serviceId);
+          if (preSelectedService) {
+            setSelectedService(preSelectedService);
+            setCurrentStep(2);
+          }
+        } else if (formationId) {
+          const preSelectedFormation = formationsData.find(f => f.id === formationId);
+          if (preSelectedFormation) {
+            setSelectedFormation(preSelectedFormation);
+            setCurrentStep(2);
+          }
+        }
+      } catch (err) {
+        setError('Erreur lors du chargement des données');
+        console.error('Error loading data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Simulation des disponibilités (en réalité, cela viendrait d'une API)
+    loadData();
+  }, []);
+
+  const getServiceFeatures = (item: Service | Formation) => {
+    if ('title' in item) {
+      // It's a formation
+      const formation = item as Formation;
+      const baseFeatures = [
+        "Manuel de formation inclus",
+        "Suivi personnalisé",
+        "Certification"
+      ];
+
+      if (formation.level.toLowerCase() === 'débutant') {
+        return [
+          "Théorie des couleurs",
+          "Préparation de la peau",
+          "Maquillage jour naturel",
+          "Kit de base offert",
+          ...baseFeatures
+        ];
+      } else if (formation.level.toLowerCase() === 'intermédiaire') {
+        return [
+          "Techniques avancées",
+          "Maquillage soirée",
+          "Contouring & highlighting",
+          "Maquillage des yeux complexe",
+          ...baseFeatures
+        ];
+      } else if (formation.level.toLowerCase() === 'avancé') {
+        return [
+          "Formation complète PRO",
+          "Techniques de studio",
+          "Maquillage mariée",
+          "Portfolio professionnel",
+          ...baseFeatures,
+          "Suivi post-formation"
+        ];
+      }
+      return baseFeatures;
+    } else {
+      // It's a service
+      const service = item as Service;
+      const lowerName = service.name.toLowerCase();
+      if (lowerName.includes('maquillage') && lowerName.includes('mariée')) {
+        return ["Essai inclus", "Retouches", "Photos", "Produits haut de gamme"];
+      }
+      if (lowerName.includes('maquillage')) {
+        return ["Conseils personnalisés", "Produits longue tenue", "Retouches"];
+      }
+      if (lowerName.includes('consultation') || lowerName.includes('vip')) {
+        return ["Analyse morphologique", "Sélection produits", "Routine personnalisée"];
+      }
+      return ["Service personnalisé", "Consultation incluse", "Produits premium"];
+    }
+  };
+
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0 && mins > 0) return `${hours}h${mins}`;
+    if (hours > 0) return `${hours}h`;
+    return `${mins}min`;
+  };
   const unavailableDates = [
     new Date(2024, 11, 25), // Noël
     new Date(2024, 11, 26),
@@ -93,9 +186,38 @@ const ReservationPage = () => {
     ) || isBefore(date, new Date()) || isAfter(date, addDays(new Date(), 60));
   };
 
-  const handleServiceSelect = (service: any) => {
+  const handleServiceSelect = (service: Service) => {
     setSelectedService(service);
+    setSelectedFormation(null);
     setCurrentStep(2);
+  };
+
+  const handleFormationSelect = (formation: Formation) => {
+    setSelectedFormation(formation);
+    setSelectedService(null);
+    setCurrentStep(2);
+  };
+
+  const getCurrentSelection = () => {
+    return selectedService || selectedFormation;
+  };
+
+  const getSelectionName = () => {
+    if (selectedService) return selectedService.name;
+    if (selectedFormation) return selectedFormation.title;
+    return '';
+  };
+
+  const getSelectionPrice = () => {
+    if (selectedService) return selectedService.price;
+    if (selectedFormation) return selectedFormation.price;
+    return 0;
+  };
+
+  const getSelectionDuration = () => {
+    if (selectedService) return selectedService.duration;
+    if (selectedFormation) return selectedFormation.duration * 60; // Convert hours to minutes
+    return 0;
   };
 
   const handleDateTimeConfirm = () => {
@@ -108,20 +230,61 @@ const ReservationPage = () => {
     setCurrentStep(4);
   };
 
-  const handleFinalConfirmation = () => {
-    // Ici, vous intégreriez avec votre système de paiement/réservation
-    console.log("Réservation confirmée:", {
-      service: selectedService,
-      date: selectedDate,
-      time: selectedTime,
-      customer: customerInfo
-    });
-    setCurrentStep(5);
+  const handleFinalConfirmation = async () => {
+    const currentSelection = getCurrentSelection();
+    if (!currentSelection || !selectedDate || !selectedTime) return;
+
+    try {
+      // First create the client
+      const clientData = {
+        firstName: customerInfo.prenom,
+        lastName: customerInfo.nom,
+        email: customerInfo.email,
+        phone: customerInfo.telephone
+      };
+
+      let client;
+      try {
+        client = await apiClient.createClient(clientData);
+      } catch (err: any) {
+        if (err.message.includes('already exists')) {
+          // Client already exists, that's fine
+          console.log('Client already exists');
+        } else {
+          throw err;
+        }
+      }
+
+      // Create the reservation
+      const reservationData = {
+        date: selectedDate.toISOString(),
+        time: selectedTime,
+        clientId: client?.id || 'temp', // TODO: Handle existing clients properly
+        serviceId: selectedService?.id,
+        formationId: selectedFormation?.id,
+        notes: customerInfo.message || undefined
+      };
+
+      // TODO: Add proper client lookup and reservation creation
+      console.log("Réservation:", {
+        selection: currentSelection,
+        date: selectedDate,
+        time: selectedTime,
+        customer: customerInfo,
+        reservation: reservationData
+      });
+      
+      setCurrentStep(5);
+    } catch (err) {
+      console.error('Error creating reservation:', err);
+      setError('Erreur lors de la création de la réservation');
+    }
   };
 
   const resetReservation = () => {
     setCurrentStep(1);
     setSelectedService(null);
+    setSelectedFormation(null);
     setSelectedDate(undefined);
     setSelectedTime("");
     setCustomerInfo({
@@ -204,6 +367,12 @@ const ReservationPage = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           {/* Step 1: Service Selection */}
           {currentStep === 1 && (
             <Card className="bg-gradient-card border-border/50 luxury-shadow">
@@ -213,63 +382,156 @@ const ReservationPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {services.map((service) => (
-                    <Card
-                      key={service.id}
-                      className={`cursor-pointer transition-all duration-300 hover:scale-105 hover-glow
-                        ${selectedService?.id === service.id ? "ring-2 ring-primary" : ""}
-                      `}
-                      onClick={() => handleServiceSelect(service)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-elegant text-xl font-semibold">
-                              {service.title}
-                            </h3>
-                            <Badge variant="secondary" className="bg-primary/10 text-primary">
-                              {service.duration}
-                            </Badge>
-                          </div>
-                          
-                          <p className="text-muted-foreground text-sm">
-                            {service.description}
-                          </p>
-                          
-                          <ul className="space-y-2">
-                            {service.features.map((feature, idx) => (
-                              <li key={idx} className="flex items-center text-sm">
-                                <CheckCircle className="w-4 h-4 text-primary mr-2" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                          
-                          <div className="pt-4 border-t border-border/50">
-                            <div className="flex justify-between items-center">
-                              <span className="font-elegant text-2xl font-bold text-primary">
-                                {service.price}€
-                              </span>
-                              <Button
-                                className="bg-gradient-luxury text-white hover-glow"
+                {loading ? (
+                  <div className="text-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+                    <p className="text-muted-foreground">Chargement des services...</p>
+                  </div>
+                ) : services.length === 0 && formations.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground mb-4">Aucun service ou formation disponible</p>
+                    <Button onClick={() => window.location.reload()}>
+                      Réessayer
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-8">
+                    {/* Services Section */}
+                    {services.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Services</h3>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {services.map((service) => {
+                            const serviceFeatures = getServiceFeatures(service);
+                            
+                            return (
+                              <Card
+                                key={service.id}
+                                className={`cursor-pointer transition-all duration-300 hover:scale-105 hover-glow
+                                  ${selectedService?.id === service.id ? "ring-2 ring-primary" : ""}
+                                `}
                                 onClick={() => handleServiceSelect(service)}
                               >
-                                Sélectionner
-                              </Button>
-                            </div>
-                          </div>
+                                <CardContent className="p-6">
+                                  <div className="space-y-4">
+                                    <div className="flex justify-between items-start">
+                                      <h3 className="font-elegant text-xl font-semibold">
+                                        {service.name}
+                                      </h3>
+                                      <Badge variant="secondary" className="bg-primary/10 text-primary">
+                                        {formatDuration(service.duration)}
+                                      </Badge>
+                                    </div>
+                                    
+                                    <p className="text-muted-foreground text-sm">
+                                      {service.description}
+                                    </p>
+                                    
+                                    <ul className="space-y-2">
+                                      {serviceFeatures.map((feature, idx) => (
+                                        <li key={idx} className="flex items-center text-sm">
+                                          <CheckCircle className="w-4 h-4 text-primary mr-2" />
+                                          {feature}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                    
+                                    <div className="pt-4 border-t border-border/50">
+                                      <div className="flex justify-between items-center">
+                                        <span className="font-elegant text-2xl font-bold text-primary">
+                                          {service.price}€
+                                        </span>
+                                        <Button
+                                          className="bg-gradient-luxury text-white hover-glow"
+                                          onClick={() => handleServiceSelect(service)}
+                                        >
+                                          Sélectionner
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                      </div>
+                    )}
+
+                    {/* Formations Section */}
+                    {formations.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Formations</h3>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {formations.map((formation) => {
+                            const formationFeatures = getServiceFeatures(formation);
+                            
+                            return (
+                              <Card
+                                key={formation.id}
+                                className={`cursor-pointer transition-all duration-300 hover:scale-105 hover-glow
+                                  ${selectedFormation?.id === formation.id ? "ring-2 ring-primary" : ""}
+                                `}
+                                onClick={() => handleFormationSelect(formation)}
+                              >
+                                <CardContent className="p-6">
+                                  <div className="space-y-4">
+                                    <div className="flex justify-between items-start">
+                                      <div>
+                                        <h3 className="font-elegant text-xl font-semibold">
+                                          {formation.title}
+                                        </h3>
+                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 mt-1">
+                                          {formation.level}
+                                        </Badge>
+                                      </div>
+                                      <Badge variant="secondary" className="bg-primary/10 text-primary">
+                                        {formatDuration(formation.duration * 60)}
+                                      </Badge>
+                                    </div>
+                                    
+                                    <p className="text-muted-foreground text-sm">
+                                      {formation.description}
+                                    </p>
+                                    
+                                    <ul className="space-y-2">
+                                      {formationFeatures.slice(0, 4).map((feature, idx) => (
+                                        <li key={idx} className="flex items-center text-sm">
+                                          <CheckCircle className="w-4 h-4 text-primary mr-2" />
+                                          {feature}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                    
+                                    <div className="pt-4 border-t border-border/50">
+                                      <div className="flex justify-between items-center">
+                                        <span className="font-elegant text-2xl font-bold text-primary">
+                                          {formation.price}€
+                                        </span>
+                                        <Button
+                                          className="bg-gradient-luxury text-white hover-glow"
+                                          onClick={() => handleFormationSelect(formation)}
+                                        >
+                                          Sélectionner
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
 
           {/* Step 2: Date & Time Selection */}
-          {currentStep === 2 && selectedService && (
+          {currentStep === 2 && getCurrentSelection() && (
             <div className="grid lg:grid-cols-2 gap-8">
               {/* Calendar */}
               <Card className="bg-gradient-card border-border/50 luxury-shadow">
@@ -338,9 +600,9 @@ const ReservationPage = () => {
                         <div className="mt-6 p-4 bg-primary/10 rounded-lg">
                           <h4 className="font-semibold text-primary mb-2">Résumé de votre réservation</h4>
                           <p className="text-sm">
-                            <strong>{selectedService.title}</strong><br />
+                            <strong>{getSelectionName()}</strong><br />
                             {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })} à {selectedTime}<br />
-                            Durée: {selectedService.duration} • Prix: {selectedService.price}€
+                            Durée: {formatDuration(getSelectionDuration())} • Prix: {getSelectionPrice()}€
                           </p>
                           
                           <Button
@@ -476,7 +738,7 @@ const ReservationPage = () => {
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span>Service:</span>
-                        <span className="font-medium">{selectedService?.title}</span>
+                        <span className="font-medium">{getSelectionName()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Date:</span>
@@ -490,12 +752,12 @@ const ReservationPage = () => {
                       </div>
                       <div className="flex justify-between">
                         <span>Durée:</span>
-                        <span className="font-medium">{selectedService?.duration}</span>
+                        <span className="font-medium">{formatDuration(getSelectionDuration())}</span>
                       </div>
                       <Separator />
                       <div className="flex justify-between text-lg font-semibold">
                         <span>Total:</span>
-                        <span className="text-primary">{selectedService?.price}€</span>
+                        <span className="text-primary">{getSelectionPrice()}€</span>
                       </div>
                     </div>
                   </div>
@@ -561,9 +823,9 @@ const ReservationPage = () => {
                   <div className="bg-primary/5 p-6 rounded-lg max-w-md mx-auto">
                     <h3 className="font-semibold mb-4">Votre rendez-vous</h3>
                     <div className="space-y-2 text-sm">
-                      <p><strong>{selectedService?.title}</strong></p>
+                      <p><strong>{getSelectionName()}</strong></p>
                       <p>{selectedDate && format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })} à {selectedTime}</p>
-                      <p className="text-primary font-medium">{selectedService?.price}€</p>
+                      <p className="text-primary font-medium">{getSelectionPrice()}€</p>
                     </div>
                   </div>
 

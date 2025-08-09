@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,8 @@ import {
   Lightbulb,
   Check,
   ArrowLeft,
-  Target
+  Target,
+  Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -21,72 +23,93 @@ import FloatingCTA from "@/components/FloatingCTA";
 import ScrollToTop from "@/components/ScrollToTop";
 import ThemeToggle from "@/components/ThemeToggle";
 import AnimatedSection from "@/components/AnimatedSection";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiClient } from "@/lib/api";
 import formationImage from "@/assets/service-formation.jpg";
 
+interface Formation {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  level: string;
+  price: number;
+  maxStudents: number;
+  isActive: boolean;
+}
+
 const FormationsPage = () => {
-  const formations = [
-    {
-      title: "Formation Débutante",
-      description: "Apprenez les bases du maquillage pour un usage quotidien",
-      duration: "4h",
-      price: "120€",
-      level: "Débutant",
-      participants: "1 personne",
-      features: [
+  const [formations, setFormations] = useState<Formation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadFormations = async () => {
+      try {
+        setLoading(true);
+        const data = await apiClient.getFormations();
+        setFormations(data);
+      } catch (err) {
+        setError('Erreur lors du chargement des formations');
+        console.error('Error loading formations:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFormations();
+  }, []);
+
+  const formatDuration = (hours: number) => {
+    if (hours < 1) return `${hours * 60}min`;
+    return hours === 1 ? '1h' : `${hours}h`;
+  };
+
+  const getLevelColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case 'débutant': return 'bg-green-100 text-green-800';
+      case 'intermédiaire': return 'bg-yellow-100 text-yellow-800';
+      case 'avancé': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getFormationFeatures = (formation: Formation) => {
+    const baseFeatures = [
+      "Manuel de formation inclus",
+      "Suivi personnalisé",
+      "Certification"
+    ];
+
+    if (formation.level.toLowerCase() === 'débutant') {
+      return [
         "Théorie des couleurs",
         "Préparation de la peau",
         "Maquillage jour naturel",
         "Kit de base offert",
-        "Manuel de formation inclus"
-      ]
-    },
-    {
-      title: "Formation Intermédiaire", 
-      description: "Perfectionnez vos techniques et découvrez de nouveaux looks",
-      duration: "6h",
-      price: "180€",
-      level: "Intermédiaire",
-      participants: "1 personne",
-      features: [
+        ...baseFeatures
+      ];
+    } else if (formation.level.toLowerCase() === 'intermédiaire') {
+      return [
         "Techniques avancées",
         "Maquillage soirée",
         "Contouring & highlighting",
         "Maquillage des yeux complexe",
-        "Certification niveau 2"
-      ]
-    },
-    {
-      title: "Formation Professionnelle",
-      description: "Devenez maquilleuse professionnelle avec une formation complète",
-      duration: "20h (5 sessions)",
-      price: "800€",
-      level: "Professionnel",
-      participants: "1-3 personnes",
-      features: [
+        ...baseFeatures
+      ];
+    } else if (formation.level.toLowerCase() === 'avancé') {
+      return [
         "Formation complète PRO",
         "Techniques de studio",
         "Maquillage mariée",
         "Portfolio professionnel",
-        "Certification officielle",
+        ...baseFeatures,
         "Suivi post-formation"
-      ]
-    },
-    {
-      title: "Atelier Groupe",
-      description: "Formation conviviale en petit groupe pour s'amuser entre amies",
-      duration: "3h",
-      price: "80€/pers",
-      level: "Tous niveaux",
-      participants: "3-6 personnes",
-      features: [
-        "Ambiance détendue",
-        "Techniques personnalisées",
-        "Mini-kit offert",
-        "Collation incluse",
-        "Photos souvenirs"
-      ]
+      ];
     }
-  ];
+
+    return baseFeatures;
+  };
 
   const modules = [
     {
@@ -230,62 +253,88 @@ const FormationsPage = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              {formations.map((formation, index) => (
-                <AnimatedSection key={index} animation="scale-in" delay={index * 100}>
-                  <Card className="bg-gradient-card border-border/50 hover-glow h-full">
-                    <CardContent className="p-8">
-                      <div className="space-y-6">
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {formation.level}
-                            </Badge>
-                            <h3 className="font-elegant text-2xl font-semibold text-foreground">
-                              {formation.title}
-                            </h3>
-                            <p className="text-muted-foreground">
-                              {formation.description}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-elegant text-2xl font-bold text-primary">
-                              {formation.price}
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-muted-foreground">Chargement des formations...</p>
+              </div>
+            ) : error ? (
+              <Alert variant="destructive" className="max-w-md mx-auto">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : formations.length === 0 ? (
+              <div className="text-center py-12">
+                <GraduationCap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-muted-foreground">Aucune formation disponible pour le moment</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-8">
+                {formations.map((formation, index) => {
+                  const features = getFormationFeatures(formation);
+                  
+                  return (
+                    <AnimatedSection key={formation.id} animation="scale-in" delay={index * 100}>
+                      <Card className="bg-gradient-card border-border/50 hover-glow h-full">
+                        <CardContent className="p-8">
+                          <div className="space-y-6">
+                            <div className="flex justify-between items-start">
+                              <div className="space-y-2">
+                                <Badge 
+                                  variant="secondary" 
+                                  className={`text-xs ${getLevelColor(formation.level)}`}
+                                >
+                                  {formation.level}
+                                </Badge>
+                                <h3 className="font-elegant text-2xl font-semibold text-foreground">
+                                  {formation.title}
+                                </h3>
+                                <p className="text-muted-foreground">
+                                  {formation.description}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-elegant text-2xl font-bold text-primary">
+                                  {formation.price}€
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
 
-                        <div className="grid grid-cols-2 gap-4 py-4 border-y border-border/50">
-                          <div className="text-center">
-                            <Clock className="w-5 h-5 text-primary mx-auto mb-1" />
-                            <div className="text-sm font-medium">{formation.duration}</div>
-                            <div className="text-xs text-muted-foreground">Durée</div>
-                          </div>
-                          <div className="text-center">
-                            <Users className="w-5 h-5 text-primary mx-auto mb-1" />
-                            <div className="text-sm font-medium">{formation.participants}</div>
-                            <div className="text-xs text-muted-foreground">Participants</div>
-                          </div>
-                        </div>
+                            <div className="grid grid-cols-2 gap-4 py-4 border-y border-border/50">
+                              <div className="text-center">
+                                <Clock className="w-5 h-5 text-primary mx-auto mb-1" />
+                                <div className="text-sm font-medium">{formatDuration(formation.duration)}</div>
+                                <div className="text-xs text-muted-foreground">Durée</div>
+                              </div>
+                              <div className="text-center">
+                                <Users className="w-5 h-5 text-primary mx-auto mb-1" />
+                                <div className="text-sm font-medium">Max {formation.maxStudents}</div>
+                                <div className="text-xs text-muted-foreground">Participants</div>
+                              </div>
+                            </div>
 
-                        <ul className="space-y-3">
-                          {formation.features.map((feature, idx) => (
-                            <li key={idx} className="flex items-center text-sm">
-                              <Check className="w-4 h-4 text-primary mr-3 flex-shrink-0" />
-                              <span className="text-muted-foreground">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
+                            <ul className="space-y-3">
+                              {features.map((feature, idx) => (
+                                <li key={idx} className="flex items-center text-sm">
+                                  <Check className="w-4 h-4 text-primary mr-3 flex-shrink-0" />
+                                  <span className="text-muted-foreground">{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
 
-                        <Button className="w-full bg-gradient-luxury text-white hover-glow">
-                          Choisir cette formation
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </AnimatedSection>
-              ))}
-            </div>
+                            <Button 
+                              className="w-full bg-gradient-luxury text-white hover-glow"
+                              onClick={() => window.location.href = `/reservation?formation=${formation.id}`}
+                            >
+                              Choisir cette formation
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </AnimatedSection>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
       </AnimatedSection>
