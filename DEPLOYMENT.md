@@ -46,6 +46,40 @@ The backend server automatically detects the correct path for static files by tr
 
 The server includes comprehensive debugging output to help diagnose static file location issues on Render.
 
+### Render Configuration
+
+The `render.yaml` file contains the deployment configuration:
+
+```yaml
+services:
+  - type: web
+    name: makeup-neill
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build:production
+    startCommand: node backend/dist/index.js    # ✅ Correct: runs from project root
+    healthCheckPath: /api/health
+```
+
+#### Important Notes:
+
+- **Working Directory**: The `startCommand` runs from the project root (`/opt/render/project/src/`)
+- **Static Files**: Frontend files are built to `dist/` relative to project root
+- **Backend Location**: Backend files are in `backend/dist/` relative to project root
+- **Do NOT** include directory changes in `startCommand` (e.g., `cd /opt/render/project/src &&`)
+
+#### Common Deployment Issues:
+
+1. **Frontend Files Not Found**
+   - **Symptom**: "index.html not found" errors in logs
+   - **Cause**: Incorrect working directory in `startCommand`
+   - **Solution**: Ensure `startCommand` runs from project root without directory changes
+
+2. **Build Verification Failed**
+   - **Symptom**: "Build verification failed: dist/index.html not found"
+   - **Cause**: Frontend build process didn't complete successfully
+   - **Solution**: Check build logs for Vite compilation errors
+
 ### Health Check
 
 The application includes a health check endpoint at `/api/health` which Render uses to verify the service is running correctly.
