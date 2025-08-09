@@ -46,16 +46,23 @@ function getStaticPath() {
     // For local development (backend runs from backend/dist/index.js)
     path.join(__dirname, '../../dist'),
     
-    // For Render deployment - when backend runs from project root
+    // For Render deployment - when working directory is project root
     path.join(process.cwd(), 'dist'),
     
-    // For Render deployment - specific Render structure
+    // For Render deployment - when working directory is backend subfolder
+    path.join(process.cwd(), '../dist'),
+    
+    // For Render deployment - explicit Render paths based on deployment structure
     '/opt/render/project/src/dist',
     path.join('/opt/render/project/src', 'dist'),
     
-    // For Render deployment - alternative paths
-    path.join(process.cwd(), '../dist'),
+    // For Render deployment - if working directory is /opt/render/project/src/backend
+    '/opt/render/project/src/backend/../dist',
+    path.join('/opt/render/project/src/backend', '../dist'),
+    
+    // For Render deployment - alternative paths based on logs
     path.join(__dirname, '../../../dist'),
+    path.join(process.cwd(), '../../dist'),
     
     // Additional paths for different deployment scenarios
     path.join(process.cwd(), 'frontend/build'),
@@ -68,7 +75,33 @@ function getStaticPath() {
   console.log(`📍 Backend __dirname: ${__dirname}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🏢 Platform: ${process.env.RENDER ? 'Render' : 'Local'}`);
+  console.log(`🔧 Node version: ${process.version}`);
   
+  // Log directory contents for debugging
+  try {
+    console.log(`📂 Contents of current working directory (${process.cwd()}):`);
+    const cwdContents = fs.readdirSync(process.cwd());
+    console.log(`   ${cwdContents.join(', ')}`);
+    
+    // If we're on Render, also check parent directories
+    if (process.env.RENDER) {
+      const parentDir = path.join(process.cwd(), '..');
+      console.log(`📂 Contents of parent directory (${parentDir}):`);
+      if (fs.existsSync(parentDir)) {
+        const parentContents = fs.readdirSync(parentDir);
+        console.log(`   ${parentContents.join(', ')}`);
+      }
+      
+      const rootDir = '/opt/render/project/src';
+      if (fs.existsSync(rootDir)) {
+        console.log(`📂 Contents of Render root directory (${rootDir}):`);
+        const rootContents = fs.readdirSync(rootDir);
+        console.log(`   ${rootContents.join(', ')}`);
+      }
+    }
+  } catch (e) {
+    console.log(`❌ Cannot read directory contents: ${e}`);
+  }
   for (const staticPath of possiblePaths) {
     try {
       const resolvedPath = path.resolve(staticPath);
@@ -101,6 +134,29 @@ function getStaticPath() {
     console.log(`📂 Contents of working directory (${process.cwd()}):`);
     const cwdContents = fs.readdirSync(process.cwd());
     console.log(`   ${cwdContents.join(', ')}`);
+    
+    // Additional debugging for Render environment
+    if (process.env.RENDER) {
+      console.log(`🔧 Render-specific debugging:`);
+      const renderPaths = [
+        '/opt/render/project/src',
+        '/opt/render/project/src/backend',
+        '/opt/render/project'
+      ];
+      
+      for (const checkPath of renderPaths) {
+        try {
+          if (fs.existsSync(checkPath)) {
+            const contents = fs.readdirSync(checkPath);
+            console.log(`   ${checkPath}: ${contents.join(', ')}`);
+          } else {
+            console.log(`   ${checkPath}: does not exist`);
+          }
+        } catch (e) {
+          console.log(`   ${checkPath}: error reading - ${e}`);
+        }
+      }
+    }
   } catch (e) {
     console.log(`❌ Cannot read working directory: ${e}`);
   }

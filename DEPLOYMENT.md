@@ -17,7 +17,9 @@ This project is configured to deploy on Render.com with the following setup:
 
 3. **Production Build**: `npm run build:production`
    - Combines both frontend and backend builds
+   - Includes automatic build verification step
    - Used by Render during deployment
+   - Ensures `dist/index.html` exists before deployment
 
 ### Directory Structure on Render
 
@@ -34,11 +36,15 @@ This project is configured to deploy on Render.com with the following setup:
 
 ### Static File Serving
 
-The backend server automatically detects the correct path for static files by trying multiple common locations:
+The backend server automatically detects the correct path for static files by trying multiple common locations in this order:
 
 1. `{backend_dir}/../../dist/` - For local development
 2. `{working_dir}/dist/` - For Render deployment (primary path)
-3. Additional fallback paths for different deployment scenarios
+3. `{working_dir}/../dist/` - For Render when working directory is backend subfolder
+4. Explicit Render paths: `/opt/render/project/src/dist`
+5. Additional fallback paths for different deployment scenarios
+
+The server includes comprehensive debugging output to help diagnose static file location issues on Render.
 
 ### Health Check
 
@@ -69,11 +75,12 @@ If you encounter "index.html not found" errors:
 **Problem**: "index.html not found at: /opt/render/project/src/dist/index.html"
 
 **Solution**: 
-- This specific Render path is now included in the backend's static file resolution
+- **Enhanced Path Resolution**: The backend now includes improved path detection for Render's deployment structure
+- **Build Verification**: The production build script now includes automatic verification that `dist/index.html` exists
+- **Render Environment Detection**: The backend automatically detects Render deployment and adjusts path resolution accordingly
+- **Comprehensive Debugging**: Enhanced logging shows exactly which paths are checked and the contents of key directories
 - Ensure the build command runs successfully: `npm run build:production`
-- Verify the frontend build creates files in the `dist/` directory
-- Check that the build script includes both frontend and backend builds
-- The backend will automatically detect and serve files from the Render-specific path structure
+- The backend will automatically detect and serve files from the correct Render path structure
 
 **Problem**: Static assets (CSS/JS) not loading
 
@@ -81,6 +88,14 @@ If you encounter "index.html not found" errors:
 - Verify that the `dist/assets/` directory contains the built files
 - Check that the backend serves static files from the correct directory
 - Ensure CORS is properly configured for your domain
+- Use the enhanced debugging output to verify the static file path resolution
+
+**Problem**: Build fails during deployment
+
+**Solution**:
+- The build process now includes automatic verification (`npm run verify:build`)
+- Check the build logs for any errors in the frontend or backend compilation
+- Ensure all dependencies are properly installed before building
 
 ### Manual Deployment Steps
 

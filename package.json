@@ -11,7 +11,8 @@
     "build:dev": "vite build --mode development",
     "build:backend": "cd backend && npm run build",
     "build:all": "npm run build && npm run build:backend",
-    "build:production": "npm run build && npm run build:backend",
+    "build:production": "npm run build && npm run build:backend && npm run verify:build",
+    "verify:build": "node -e \"const fs = require('fs'); const path = require('path'); const indexPath = path.join(process.cwd(), 'dist', 'index.html'); if (!fs.existsSync(indexPath)) { console.error('❌ Build verification failed: dist/index.html not found'); process.exit(1); } else { console.log('✅ Build verification passed: dist/index.html found'); }\"",
     "start": "node backend/dist/index.js",
     "lint": "eslint .",
     "preview": "vite preview"
