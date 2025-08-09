@@ -11,7 +11,7 @@ const mockUsers = [
     firstName: 'Admin',
     lastName: 'User',
     email: 'admin@hautdegamme.com',
-    password: '$2a$10$XrqgXEUZ1wZOCUC5VZJf9.xF8KZH8tJmxbqMVJXJ9XpKzW5VXQk0.', // "admin123"
+    password: '$2b$10$gw1iD9tX2a5EECUYDXC0CeZyGr7LlS42GTQg7xsppfM4zK.E2uB.a', // "admin123"
     role: 'ADMIN' as const,
     createdAt: new Date(),
     updatedAt: new Date()
