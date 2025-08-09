@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: makeup-neill
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build:production
+    startCommand: cd backend && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
