@@ -10,13 +10,15 @@ import { serviceRoutes } from './routes/services.js';
 import { reservationRoutes } from './routes/reservations.js';
 import { clientRoutes } from './routes/clients.js';
 
-dotenv.config();
+// Load .env file but don't override existing environment variables
+// This ensures Render's environment variables take precedence
+dotenv.config({ override: false });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 // Middleware
 app.use(helmet());
@@ -68,7 +70,7 @@ app.use((req, res, next) => {
   res.sendFile(path.join(staticPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📱 Health check: http://localhost:${PORT}/api/health`);
 });
