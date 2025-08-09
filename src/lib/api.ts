@@ -172,6 +172,84 @@ class ApiClient {
     });
     return this.handleResponse(response);
   }
+
+  async createClient(client: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/clients`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(client),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateClient(id: string, client: Partial<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  }>) {
+    const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(client),
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteClient(id: string) {
+    const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Enhanced reservations methods
+  async createReservation(reservation: {
+    date: string;
+    time: string;
+    clientId: string;
+    serviceId?: string;
+    formationId?: string;
+    notes?: string;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/reservations`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(reservation),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateReservation(id: string, reservation: Partial<{
+    date: string;
+    time: string;
+    status: string;
+    notes: string;
+    clientId: string;
+    serviceId: string;
+    formationId: string;
+  }>) {
+    const response = await fetch(`${API_BASE_URL}/reservations/${id}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(reservation),
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteReservation(id: string) {
+    const response = await fetch(`${API_BASE_URL}/reservations/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
 }
 
 export const apiClient = new ApiClient();
