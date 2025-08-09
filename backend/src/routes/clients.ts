@@ -1,112 +1,100 @@
 import express from 'express';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
-import { Client } from '../types/index';
+import { db } from '../database';
 
 const router = express.Router();
 
-// Mock clients data
-const mockClients: Client[] = [
-  {
-    id: '1',
-    firstName: 'Marie',
-    lastName: 'Dupont',
-    email: 'marie.dupont@email.com',
-    phone: '06 12 34 56 78',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    firstName: 'Sarah',
-    lastName: 'Martin',
-    email: 'sarah.martin@email.com',
-    phone: '06 98 76 54 32',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
-
 // Get all clients (admin only)
 router.get('/', authenticateToken, requireAdmin, (req, res) => {
-  res.json(mockClients);
+  try {
+    const clients = db.getAllClients();
+    res.json(clients);
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Get client by ID (admin only)
 router.get('/:id', authenticateToken, requireAdmin, (req, res) => {
-  const client = mockClients.find(c => c.id === req.params.id);
-  if (!client) {
-    return res.status(404).json({ error: 'Client not found' });
+  try {
+    const client = db.getClientById(req.params.id);
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+    res.json(client);
+  } catch (error) {
+    console.error('Error fetching client:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  res.json(client);
 });
 
 // Create new client
 router.post('/', (req, res) => {
-  const { firstName, lastName, email, phone } = req.body;
-  
-  if (!firstName || !lastName || !email) {
-    return res.status(400).json({ error: 'First name, last name, and email are required' });
+  try {
+    const { firstName, lastName, email, phone } = req.body;
+    
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({ error: 'First name, last name, and email are required' });
+    }
+
+    const clientData = {
+      firstName,
+      lastName,
+      email,
+      phone: phone || undefined
+    };
+
+    const newClient = db.createClient(clientData);
+    res.status(201).json(newClient);
+  } catch (error: any) {
+    if (error.message.includes('already exists')) {
+      return res.status(400).json({ error: error.message });
+    }
+    console.error('Error creating client:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  // Check if email already exists
-  const existingClient = mockClients.find(c => c.email === email);
-  if (existingClient) {
-    return res.status(400).json({ error: 'Client with this email already exists' });
-  }
-
-  const newClient: Client = {
-    id: Date.now().toString(),
-    firstName,
-    lastName,
-    email,
-    phone: phone || undefined,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
-
-  mockClients.push(newClient);
-  res.status(201).json(newClient);
 });
 
 // Update client (admin only)
 router.put('/:id', authenticateToken, requireAdmin, (req, res) => {
-  const index = mockClients.findIndex(c => c.id === req.params.id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Client not found' });
-  }
+  try {
+    const { firstName, lastName, email, phone } = req.body;
+    
+    const updateData: any = {};
+    if (firstName) updateData.firstName = firstName;
+    if (lastName) updateData.lastName = lastName;
+    if (email) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
 
-  const { firstName, lastName, email, phone } = req.body;
-  const client = mockClients[index];
-
-  // Check if email is being changed and if it already exists
-  if (email && email !== client.email) {
-    const existingClient = mockClients.find(c => c.email === email && c.id !== req.params.id);
-    if (existingClient) {
-      return res.status(400).json({ error: 'Client with this email already exists' });
+    const updatedClient = db.updateClient(req.params.id, updateData);
+    if (!updatedClient) {
+      return res.status(404).json({ error: 'Client not found' });
     }
+
+    res.json(updatedClient);
+  } catch (error: any) {
+    if (error.message.includes('already exists')) {
+      return res.status(400).json({ error: error.message });
+    }
+    console.error('Error updating client:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  mockClients[index] = {
-    ...client,
-    firstName: firstName || client.firstName,
-    lastName: lastName || client.lastName,
-    email: email || client.email,
-    phone: phone !== undefined ? phone : client.phone,
-    updatedAt: new Date()
-  };
-
-  res.json(mockClients[index]);
 });
 
 // Delete client (admin only)
 router.delete('/:id', authenticateToken, requireAdmin, (req, res) => {
-  const index = mockClients.findIndex(c => c.id === req.params.id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Client not found' });
-  }
+  try {
+    const deleted = db.deleteClient(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
 
-  mockClients.splice(index, 1);
-  res.json({ message: 'Client deleted successfully' });
+    res.json({ message: 'Client deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting client:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 export { router as clientRoutes };

@@ -1,125 +1,96 @@
 import express from 'express';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
-import { Service } from '../types/index';
+import { db } from '../database';
 
 const router = express.Router();
 
-// Mock services data
-const mockServices: Service[] = [
-  {
-    id: '1',
-    name: 'Maquillage Jour',
-    description: 'Maquillage naturel pour tous les jours',
-    price: 45,
-    duration: 60,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    name: 'Maquillage Soirée',
-    description: 'Maquillage sophistiqué pour vos soirées',
-    price: 65,
-    duration: 90,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '3',
-    name: 'Maquillage Mariée',
-    description: 'Maquillage parfait pour votre jour J',
-    price: 120,
-    duration: 120,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '4',
-    name: 'Consultation Beauté',
-    description: 'Conseils personnalisés selon votre morphologie',
-    price: 35,
-    duration: 45,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
-
 // Get all services
 router.get('/', (req, res) => {
-  res.json(mockServices.filter(s => s.isActive));
+  try {
+    const services = db.getAllServices();
+    res.json(services);
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Get service by ID
 router.get('/:id', (req, res) => {
-  const service = mockServices.find(s => s.id === req.params.id);
-  if (!service) {
-    return res.status(404).json({ error: 'Service not found' });
+  try {
+    const service = db.getServiceById(req.params.id);
+    if (!service) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+    res.json(service);
+  } catch (error) {
+    console.error('Error fetching service:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  res.json(service);
 });
 
 // Create new service (admin only)
 router.post('/', authenticateToken, requireAdmin, (req, res) => {
-  const { name, description, price, duration } = req.body;
-  
-  if (!name || !description || !price || !duration) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  try {
+    const { name, description, price, duration } = req.body;
+    
+    if (!name || !description || !price || !duration) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const serviceData = {
+      name,
+      description,
+      price: parseFloat(price),
+      duration: parseInt(duration),
+      isActive: true
+    };
+
+    const newService = db.createService(serviceData);
+    res.status(201).json(newService);
+  } catch (error) {
+    console.error('Error creating service:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  const newService: Service = {
-    id: Date.now().toString(),
-    name,
-    description,
-    price: parseFloat(price),
-    duration: parseInt(duration),
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
-
-  mockServices.push(newService);
-  res.status(201).json(newService);
 });
 
 // Update service (admin only)
 router.put('/:id', authenticateToken, requireAdmin, (req, res) => {
-  const index = mockServices.findIndex(s => s.id === req.params.id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Service not found' });
+  try {
+    const { name, description, price, duration, isActive } = req.body;
+    
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (description) updateData.description = description;
+    if (price) updateData.price = parseFloat(price);
+    if (duration) updateData.duration = parseInt(duration);
+    if (isActive !== undefined) updateData.isActive = isActive;
+
+    const updatedService = db.updateService(req.params.id, updateData);
+    if (!updatedService) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+
+    res.json(updatedService);
+  } catch (error) {
+    console.error('Error updating service:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  const { name, description, price, duration, isActive } = req.body;
-  const service = mockServices[index];
-
-  mockServices[index] = {
-    ...service,
-    name: name || service.name,
-    description: description || service.description,
-    price: price ? parseFloat(price) : service.price,
-    duration: duration ? parseInt(duration) : service.duration,
-    isActive: isActive !== undefined ? isActive : service.isActive,
-    updatedAt: new Date()
-  };
-
-  res.json(mockServices[index]);
 });
 
 // Delete service (admin only)
 router.delete('/:id', authenticateToken, requireAdmin, (req, res) => {
-  const index = mockServices.findIndex(s => s.id === req.params.id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Service not found' });
+  try {
+    const deleted = db.deleteService(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+
+    res.json({ message: 'Service deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting service:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  // Soft delete - mark as inactive
-  mockServices[index].isActive = false;
-  mockServices[index].updatedAt = new Date();
-
-  res.json({ message: 'Service deleted successfully' });
 });
 
 export { router as serviceRoutes };
