@@ -3,6 +3,7 @@ services:
     name: makeup-neill
     env: node
     plan: free
+    rootDir: .
     buildCommand: npm install && npm run build:production
     startCommand: node backend/dist/index.js
     healthCheckPath: /api/health

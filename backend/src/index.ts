@@ -47,17 +47,23 @@ function getStaticPath() {
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🏢 Platform: ${process.env.RENDER ? 'Render' : 'Local'}`);
   
-  // Simplified path resolution: prioritize expected locations
+  // Enhanced path resolution with better Render support
   const possiblePaths = [
-    // Primary: Working directory + dist (works for both local and Render with fixed start command)
+    // Primary: Project root + dist (for when CWD is project root)
     path.join(process.cwd(), 'dist'),
     
-    // Secondary: Relative to backend location (for local development)
+    // Secondary: Relative to backend location (for local development and Render)
     path.join(__dirname, '../../dist'),
     
-    // Tertiary: Render-specific absolute path (fallback)
+    // Tertiary: If CWD is backend directory, go up one level
+    path.join(process.cwd(), '../dist'),
+    
+    // Quaternary: Render-specific absolute paths
     '/opt/render/project/src/dist',
-  ];
+    
+    // Additional fallback: check if we're in a backend subdir and adjust
+    process.cwd().endsWith('/backend') ? path.join(process.cwd(), '../dist') : null,
+  ].filter(Boolean);
   
   // Log directory contents for debugging
   try {
@@ -69,6 +75,8 @@ function getStaticPath() {
   }
   
   for (const staticPath of possiblePaths) {
+    if (!staticPath) continue; // Skip null values
+    
     try {
       const resolvedPath = path.resolve(staticPath);
       const indexPath = path.join(resolvedPath, 'index.html');
