@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { authRoutes } from './routes/auth.js';
 import { formationRoutes } from './routes/formations.js';
 import { serviceRoutes } from './routes/services.js';
@@ -37,8 +38,39 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Determine the correct path for static files
+function getStaticPath() {
+  // Try multiple possible locations for the frontend build files
+  const possiblePaths = [
+    path.join(__dirname, '../../dist'),           // For local development
+    path.join(process.cwd(), 'dist'),             // For Render deployment
+    path.join(__dirname, '../../../dist'),        // Alternative path
+    path.join(process.cwd(), 'frontend/build'),   // Alternative frontend structure
+    path.join(process.cwd(), 'client/build'),     // Alternative client structure
+  ];
+  
+  for (const staticPath of possiblePaths) {
+    try {
+      const indexPath = path.join(staticPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        console.log(`✓ Found static files at: ${staticPath}`);
+        return staticPath;
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.log(`✗ Checking path ${staticPath}: ${errorMessage}`);
+    }
+  }
+  
+  // Fallback to the default path
+  const fallbackPath = path.join(__dirname, '../../dist');
+  console.warn(`⚠️  No static files found, using fallback path: ${fallbackPath}`);
+  return fallbackPath;
+}
+
 // Serve static files from the React app build directory
-const staticPath = path.join(__dirname, '../../dist');
+const staticPath = getStaticPath();
+console.log(`📁 Serving static files from: ${staticPath}`);
 app.use(express.static(staticPath));
 
 // Routes
@@ -67,12 +99,30 @@ app.use((req, res, next) => {
   }
   
   // For all other routes, serve the React app
-  res.sendFile(path.join(staticPath, 'index.html'));
+  const indexPath = path.join(staticPath, 'index.html');
+  
+  // Check if index.html exists before trying to serve it
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    console.error(`❌ index.html not found at: ${indexPath}`);
+    res.status(404).json({ 
+      error: 'Frontend files not found',
+      staticPath: staticPath,
+      indexPath: indexPath,
+      cwd: process.cwd(),
+      dirname: __dirname
+    });
+  }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📱 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📁 Static files: ${staticPath}`);
+  console.log(`💻 Working directory: ${process.cwd()}`);
+  console.log(`📍 Backend location: ${__dirname}`);
 });
 
 export default app;

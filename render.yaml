@@ -4,8 +4,14 @@ services:
     env: node
     plan: free
     buildCommand: npm install && npm run build:production
-    startCommand: cd backend && npm start
+    startCommand: node backend/dist/index.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        value: postgresql://username:password@hostname:port/database
