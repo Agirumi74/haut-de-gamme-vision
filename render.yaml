@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: makeup-neill
+    env: node
+    buildCommand: npm run build:production
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /api/health
