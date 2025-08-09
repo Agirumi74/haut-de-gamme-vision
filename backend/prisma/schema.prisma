@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  name         String
+  description  String
+  price        Float
+  duration     Int           // en minutes
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  reservations Reservation[]
+
+  @@map("services")
+}
+
+model Formation {
+  id           String        @id @default(cuid())
+  title        String
+  description  String
+  duration     Int           // en heures
+  level        String        // "débutant", "intermédiaire", "avancé"
+  price        Float
+  maxStudents  Int           @default(10)
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  reservations Reservation[]
+
+  @@map("formations")
+}
+
+model Client {
+  id           String        @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String        @unique
+  phone        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  reservations Reservation[]
+
+  @@map("clients")
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  date        DateTime
+  time        String            // format "HH:mm"
+  status      ReservationStatus @default(PENDING)
+  notes       String?
+  clientId    String
+  serviceId   String?
+  formationId String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  client    Client     @relation(fields: [clientId], references: [id])
+  service   Service?   @relation(fields: [serviceId], references: [id])
+  formation Formation? @relation(fields: [formationId], references: [id])
+
+  @@map("reservations")
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  content   String
+  rating    Int      @default(5)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("testimonials")
+}

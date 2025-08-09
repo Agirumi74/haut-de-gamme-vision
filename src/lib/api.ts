@@ -1,0 +1,177 @@
+const API_BASE_URL = 'http://localhost:3001/api';
+
+class ApiClient {
+  private token: string | null = null;
+
+  constructor() {
+    this.token = localStorage.getItem('authToken');
+  }
+
+  private getHeaders(): HeadersInit {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (this.token) {
+      headers.Authorization = `Bearer ${this.token}`;
+    }
+
+    return headers;
+  }
+
+  private async handleResponse(response: Response) {
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
+    return response.json();
+  }
+
+  // Auth methods
+  async login(email: string, password: string) {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ email, password }),
+    });
+    
+    const data = await this.handleResponse(response);
+    this.token = data.token;
+    localStorage.setItem('authToken', data.token);
+    return data;
+  }
+
+  async getCurrentUser() {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  logout() {
+    this.token = null;
+    localStorage.removeItem('authToken');
+  }
+
+  // Formations methods
+  async getFormations() {
+    const response = await fetch(`${API_BASE_URL}/formations`);
+    return this.handleResponse(response);
+  }
+
+  async getFormation(id: string) {
+    const response = await fetch(`${API_BASE_URL}/formations/${id}`);
+    return this.handleResponse(response);
+  }
+
+  async createFormation(formation: {
+    title: string;
+    description: string;
+    duration: number;
+    level: string;
+    price: number;
+    maxStudents?: number;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/formations`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(formation),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateFormation(id: string, formation: Partial<{
+    title: string;
+    description: string;
+    duration: number;
+    level: string;
+    price: number;
+    maxStudents: number;
+    isActive: boolean;
+  }>) {
+    const response = await fetch(`${API_BASE_URL}/formations/${id}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(formation),
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteFormation(id: string) {
+    const response = await fetch(`${API_BASE_URL}/formations/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Services methods
+  async getServices() {
+    const response = await fetch(`${API_BASE_URL}/services`);
+    return this.handleResponse(response);
+  }
+
+  async createService(service: {
+    name: string;
+    description: string;
+    price: number;
+    duration: number;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/services`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(service),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateService(id: string, service: Partial<{
+    name: string;
+    description: string;
+    price: number;
+    duration: number;
+    isActive: boolean;
+  }>) {
+    const response = await fetch(`${API_BASE_URL}/services/${id}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(service),
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteService(id: string) {
+    const response = await fetch(`${API_BASE_URL}/services/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Reservations methods
+  async getReservations() {
+    const response = await fetch(`${API_BASE_URL}/reservations`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateReservationStatus(id: string, status: string) {
+    const response = await fetch(`${API_BASE_URL}/reservations/${id}/status`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ status }),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Clients methods
+  async getClients() {
+    const response = await fetch(`${API_BASE_URL}/clients`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+}
+
+export const apiClient = new ApiClient();

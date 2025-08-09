@@ -10,6 +10,9 @@ import FormationsPage from "./pages/services/FormationsPage";
 import ConsultationsVIPPage from "./pages/services/ConsultationsVIPPage";
 import RelookingPage from "./pages/services/RelookingPage";
 import ReservationPage from "./pages/ReservationPage";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminFormations from "./pages/admin/AdminFormations";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +29,9 @@ const App = () => (
           <Route path="/services/formations" element={<FormationsPage />} />
           <Route path="/services/consultations-vip" element={<ConsultationsVIPPage />} />
           <Route path="/services/relooking-complet" element={<RelookingPage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/formations" element={<AdminFormations />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
