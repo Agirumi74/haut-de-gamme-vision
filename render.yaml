@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     rootDir: .
-    buildCommand: npm install && npm run build:production
+    buildCommand: npm install && npx vite build && cd backend && npm install && npm run build
     startCommand: node backend/dist/index.js
     healthCheckPath: /api/health
     envVars:
