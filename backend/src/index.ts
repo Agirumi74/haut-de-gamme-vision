@@ -49,19 +49,25 @@ function getStaticPath() {
   
   // Enhanced path resolution with better Render support
   const possiblePaths = [
-    // Primary: Project root + dist (for when CWD is project root)
+    // Primary: For Render deployment where working dir is project root
+    process.env.RENDER && process.cwd().endsWith('/src') ? path.join(process.cwd(), 'dist') : null,
+    
+    // Secondary: Project root + dist (for when CWD is project root)
     path.join(process.cwd(), 'dist'),
     
-    // Secondary: Relative to backend location (for local development and Render)
+    // Tertiary: Relative to backend location (for local development and Render)
     path.join(__dirname, '../../dist'),
     
-    // Tertiary: If CWD is backend directory, go up one level
+    // Quaternary: If CWD is backend directory, go up one level
     path.join(process.cwd(), '../dist'),
     
-    // Quaternary: Render-specific absolute paths
-    '/opt/render/project/src/dist',
+    // Render-specific: Check if we can find the exact Render structure
+    process.env.RENDER ? '/opt/render/project/src/dist' : null,
     
-    // Additional fallback: check if we're in a backend subdir and adjust
+    // Additional Render paths based on common Render deployment patterns
+    process.env.RENDER && process.cwd().includes('/backend') ? path.join(process.cwd(), '../../dist') : null,
+    
+    // Fallback: check if we're in a backend subdir and adjust
     process.cwd().endsWith('/backend') ? path.join(process.cwd(), '../dist') : null,
   ].filter(Boolean);
   
