@@ -56,17 +56,17 @@ services:
     name: makeup-neill
     env: node
     plan: free
-    buildCommand: npm install && npm run build:production
-    startCommand: node backend/dist/index.js    # ✅ Correct: runs from project root
+    buildCommand: npm install && npx vite build && cd backend && npm install && npm run build
+    startCommand: cd backend && npm start    # ✅ Correct: changes to backend dir and runs npm start
     healthCheckPath: /api/health
 ```
 
 #### Important Notes:
 
-- **Working Directory**: The `startCommand` runs from the project root (`/opt/render/project/src/`)
+- **Working Directory**: The `startCommand` changes to the backend directory before starting the server
 - **Static Files**: Frontend files are built to `dist/` relative to project root
 - **Backend Location**: Backend files are in `backend/dist/` relative to project root
-- **Do NOT** include directory changes in `startCommand` (e.g., `cd /opt/render/project/src &&`)
+- **Deployment Process**: The startCommand uses `cd backend && npm start` which runs `node dist/index.js` from the backend directory
 
 #### Common Deployment Issues:
 
@@ -134,8 +134,8 @@ If you encounter "index.html not found" errors:
 ### Manual Deployment Steps
 
 1. Connect your GitHub repository to Render
-2. Set the build command: `npm install && npm run build:production`
-3. Set the start command: `node backend/dist/index.js`
+2. Set the build command: `npm install && npx vite build && cd backend && npm install && npm run build`
+3. Set the start command: `cd backend && npm start`
 4. Configure environment variables
 5. Deploy
 
