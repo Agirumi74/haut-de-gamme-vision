@@ -49,6 +49,10 @@ function getStaticPath() {
   
   // Enhanced path resolution with better Render support
   const possiblePaths = [
+    // Render-specific: From logs we know files are at /opt/render/project/src/dist
+    // and working dir is /opt/render/project/src/backend
+    process.env.RENDER ? path.join(process.cwd(), '../dist') : null,
+    
     // Primary: For Render deployment where working dir is project root
     process.env.RENDER && process.cwd().endsWith('/src') ? path.join(process.cwd(), 'dist') : null,
     
