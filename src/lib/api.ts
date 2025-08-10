@@ -1,4 +1,14 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+// Determine API base URL based on environment
+const getApiBaseUrl = () => {
+  // In production (deployed site), use relative paths
+  if (window.location.hostname === 'makeup-neill.onrender.com' || window.location.hostname.includes('onrender.com')) {
+    return '/api';
+  }
+  // In development, use localhost
+  return 'http://localhost:3001/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiClient {
   private token: string | null = null;
