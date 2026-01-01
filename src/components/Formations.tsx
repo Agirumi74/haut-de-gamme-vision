@@ -1,35 +1,25 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { Clock, Users, Award, BookOpen, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "./ui/alert";
+import { Clock, Users, Award, BookOpen, CheckCircle, ArrowRight } from "lucide-react";
 import { apiClient } from "@/lib/api";
-
-interface Formation {
-  id: string;
-  title: string;
-  description: string;
-  duration: number;
-  level: string;
-  price: number;
-  maxStudents: number;
-  isActive: boolean;
-}
+import { staticFormations, type Formation } from "@/lib/staticData";
 
 const Formations = () => {
-  const [formations, setFormations] = useState<Formation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [formations, setFormations] = useState<Formation[]>(staticFormations);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadFormations = async () => {
       try {
         setLoading(true);
         const data = await apiClient.getFormations();
-        setFormations(data.slice(0, 3)); // Show only first 3 formations
+        if (data && data.length > 0) {
+          setFormations(data.slice(0, 3));
+        }
       } catch (err) {
-        setError('Erreur lors du chargement des formations');
-        console.error('Error loading formations:', err);
+        // Silently fallback to static data - already set as default
+        console.log('Using static formations data');
       } finally {
         setLoading(false);
       }
@@ -40,31 +30,27 @@ const Formations = () => {
 
   const formatDuration = (hours: number) => {
     if (hours < 1) return `${hours * 60} minutes`;
-    return hours === 1 ? '1 heure' : `${hours} heures`;
+    if (hours === 1) return '1 heure';
+    if (hours >= 24) return `${Math.round(hours / 8)} jours`;
+    return `${hours} heures`;
   };
 
   const getLevelColor = (level: string) => {
     switch (level.toLowerCase()) {
-      case 'débutant': return 'bg-green-100 text-green-800';
-      case 'intermédiaire': return 'bg-yellow-100 text-yellow-800';
-      case 'avancé': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'débutant': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+      case 'intermédiaire': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+      case 'avancé': return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
   const getBadgeText = (formation: Formation, index: number) => {
-    if (index === 0) return "Populaire";
-    if (formation.level.toLowerCase() === 'avancé') return "Certifiante";
-    return "Nouveau";
+    if (index === 0) return "⭐ Populaire";
+    if (formation.level.toLowerCase() === 'avancé') return "🎓 Certifiante";
+    return "✨ Recommandé";
   };
 
   const getFormationProgram = (formation: Formation) => {
-    const baseProgram = [
-      "Manuel de formation inclus",
-      "Suivi personnalisé",
-      "Certification"
-    ];
-
     if (formation.level.toLowerCase() === 'débutant') {
       return [
         "Préparation de la peau",
@@ -79,7 +65,7 @@ const Formations = () => {
         "Maquillage des yeux avancé",
         "Techniques de lèvres",
         "Looks jour/soir",
-        ...baseProgram
+        "Manuel de formation inclus"
       ];
     } else if (formation.level.toLowerCase() === 'avancé') {
       return [
@@ -87,12 +73,14 @@ const Formations = () => {
         "Techniques de studio",
         "Maquillage mariée",
         "Portfolio professionnel",
-        ...baseProgram,
-        "Suivi post-formation"
+        "Certification officielle"
       ];
     }
-
-    return baseProgram;
+    return [
+      "Manuel de formation inclus",
+      "Suivi personnalisé",
+      "Certification"
+    ];
   };
 
   const advantages = [
@@ -118,45 +106,23 @@ const Formations = () => {
     }
   ];
 
-  if (loading) {
-    return (
-      <section id="formations" className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-muted-foreground">Chargement des formations...</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section id="formations" className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <Alert variant="destructive" className="max-w-md mx-auto">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section id="formations" className="py-20 bg-background">
-      <div className="container mx-auto px-4">
+    <section id="formations" className="py-24 bg-background relative overflow-hidden">
+      {/* Decorative background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.05),transparent_50%)]" />
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
-          <p className="text-primary font-medium tracking-wide uppercase text-sm mb-4">
+          <span className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium tracking-wide uppercase mb-6">
             Nos Formations
-          </p>
+          </span>
           <h2 className="font-elegant text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Libérez Votre
-            <span className="block bg-gradient-luxury bg-clip-text text-transparent">
+            <span className="block bg-gradient-luxury bg-clip-text text-transparent mt-2">
               Potentiel Créatif
             </span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Des formations personnalisées pour tous les niveaux, dispensées par une professionnelle 
             expérimentée dans un cadre privilégié.
           </p>
@@ -169,24 +135,33 @@ const Formations = () => {
             const badge = getBadgeText(formation, index);
 
             return (
-              <Card key={formation.id} className="group bg-gradient-card border-border/50 hover-glow relative overflow-hidden h-full">
+              <Card 
+                key={formation.id} 
+                className={`group relative overflow-hidden transition-all duration-500 h-full ${
+                  index === 1 
+                    ? 'bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20 shadow-luxury lg:scale-105 lg:-translate-y-2' 
+                    : 'bg-card border-border/30 shadow-card hover:shadow-luxury'
+                }`}
+              >
                 {/* Badge */}
                 <div className="absolute top-4 right-4 z-10">
-                  <span className="px-3 py-1 bg-primary text-white text-xs font-medium rounded-full">
+                  <span className={`px-3 py-1.5 text-xs font-medium rounded-full ${
+                    index === 1 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-secondary text-secondary-foreground'
+                  }`}>
                     {badge}
                   </span>
                 </div>
 
                 <CardContent className="p-8 h-full flex flex-col">
                   <div className="space-y-6 flex-1">
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 text-xs font-medium rounded ${getLevelColor(formation.level)}`}>
-                          {formation.level}
-                        </span>
-                      </div>
+                    <div className="space-y-4">
+                      <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${getLevelColor(formation.level)}`}>
+                        {formation.level}
+                      </span>
                       
-                      <h3 className="font-elegant text-2xl font-bold text-foreground">
+                      <h3 className="font-elegant text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
                         {formation.title}
                       </h3>
                       
@@ -196,20 +171,20 @@ const Formations = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 py-4 border-y border-border/50">
-                      <div className="text-center">
-                        <Clock className="w-5 h-5 text-primary mx-auto mb-1" />
-                        <div className="text-sm font-medium">{formatDuration(formation.duration)}</div>
+                      <div className="text-center space-y-1">
+                        <Clock className="w-5 h-5 text-primary mx-auto" />
+                        <div className="text-sm font-semibold text-foreground">{formatDuration(formation.duration)}</div>
                         <div className="text-xs text-muted-foreground">Durée</div>
                       </div>
-                      <div className="text-center">
-                        <Users className="w-5 h-5 text-primary mx-auto mb-1" />
-                        <div className="text-sm font-medium">Max {formation.maxStudents}</div>
+                      <div className="text-center space-y-1">
+                        <Users className="w-5 h-5 text-primary mx-auto" />
+                        <div className="text-sm font-semibold text-foreground">Max {formation.maxStudents}</div>
                         <div className="text-xs text-muted-foreground">Participants</div>
                       </div>
                     </div>
 
                     <div className="space-y-3">
-                      <h4 className="font-semibold text-foreground">Programme inclus :</h4>
+                      <h4 className="font-semibold text-foreground text-sm uppercase tracking-wide">Programme inclus</h4>
                       <ul className="space-y-2">
                         {program.slice(0, 5).map((item, idx) => (
                           <li key={idx} className="flex items-start text-sm">
@@ -223,7 +198,8 @@ const Formations = () => {
 
                   <div className="mt-8 pt-6 border-t border-border/50">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="text-right">
+                      <div>
+                        <span className="text-sm text-muted-foreground">À partir de</span>
                         <div className="font-elegant text-3xl font-bold text-primary">
                           {formation.price}€
                         </div>
@@ -231,11 +207,15 @@ const Formations = () => {
                     </div>
                     
                     <Button 
-                      className="w-full bg-gradient-luxury text-white hover-glow group"
+                      className={`w-full group/btn ${
+                        index === 1 
+                          ? 'bg-gradient-luxury text-primary-foreground hover:opacity-90' 
+                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      }`}
                       onClick={() => window.location.href = `/reservation?formation=${formation.id}`}
                     >
                       Réserver maintenant
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                     </Button>
                   </div>
                 </CardContent>
@@ -245,17 +225,17 @@ const Formations = () => {
         </div>
 
         {/* Advantages */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {advantages.map((advantage, index) => (
-            <Card key={index} className="bg-gradient-card border-border/50 hover-glow text-center">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-gradient-luxury rounded-2xl flex items-center justify-center mx-auto mb-6 text-white">
+            <Card key={index} className="bg-card/50 border-border/30 shadow-card hover:shadow-luxury transition-all duration-300 text-center group">
+              <CardContent className="p-6">
+                <div className="w-14 h-14 bg-gradient-luxury rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary-foreground group-hover:scale-110 transition-transform">
                   {advantage.icon}
                 </div>
-                <h3 className="font-elegant text-xl font-semibold text-foreground mb-3">
+                <h3 className="font-semibold text-foreground mb-2">
                   {advantage.title}
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-muted-foreground text-sm">
                   {advantage.description}
                 </p>
               </CardContent>
@@ -265,16 +245,16 @@ const Formations = () => {
 
         {/* CTA */}
         <div className="text-center">
-          <div className="inline-flex items-center space-x-4">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4">
             <Button 
               size="lg" 
-              className="bg-gradient-luxury text-white hover-glow"
+              className="bg-gradient-luxury text-primary-foreground hover:opacity-90 group"
               onClick={() => window.location.href = '/services/formations'}
             >
               Voir toutes les formations
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
               <BookOpen className="w-5 h-5 mr-2" />
               Télécharger le programme
             </Button>

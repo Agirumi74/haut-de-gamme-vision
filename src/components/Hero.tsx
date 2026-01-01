@@ -1,87 +1,134 @@
 import { Button } from "./ui/button";
-import { Star } from "lucide-react";
+import { Star, ArrowRight, Play } from "lucide-react";
 import heroImage from "@/assets/hero-beauty.jpg";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center pt-20">
-      <div className="container mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 bg-gradient-hero" />
+      <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-3xl" />
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Content */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <p className="text-primary font-medium tracking-wide uppercase text-sm">
-                L'artisane de votre beauté
-              </p>
-              <h1 className="font-elegant text-5xl lg:text-7xl font-bold text-foreground leading-tight">
+          <div className="space-y-8 lg:pr-8">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-primary font-medium text-sm tracking-wide uppercase">
+                  L'artisane de votre beauté
+                </span>
+              </div>
+              
+              <h1 className="font-elegant text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-[1.1]">
                 Une Approche
-                <span className="block bg-gradient-luxury bg-clip-text text-transparent">
-                  Unique
+                <span className="block bg-gradient-luxury bg-clip-text text-transparent mt-2">
+                  Unique & Raffinée
                 </span>
               </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
+              
+              <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl">
                 Passionnée par l'art du maquillage et la transmission, je vous accompagne avec 
                 bienveillance pour révéler votre beauté naturelle et développer votre confiance.
               </p>
             </div>
 
             {/* Rating */}
-            <div className="flex items-center space-x-2">
-              <div className="flex space-x-1">
+            <div className="flex items-center gap-4 p-4 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 w-fit">
+              <div className="flex">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-primary text-primary" />
                 ))}
               </div>
-              <span className="text-muted-foreground">4.9/5 • 120+ clientes satisfaites</span>
+              <div className="h-6 w-px bg-border" />
+              <div className="text-sm">
+                <span className="font-semibold text-foreground">4.9/5</span>
+                <span className="text-muted-foreground"> • 500+ clientes satisfaites</span>
+              </div>
             </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg" 
-                className="bg-gradient-luxury text-white hover-glow luxury-shadow"
+                className="bg-gradient-luxury text-primary-foreground hover:opacity-90 shadow-luxury group text-base px-8"
                 onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Découvrir mes services
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="border-primary text-primary hover:bg-primary hover:text-white"
-                onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
+                className="border-border hover:border-primary hover:bg-primary/5 group text-base px-8"
+                onClick={() => document.getElementById('galerie')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Voir la galerie
+                <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                Voir mon travail
               </Button>
             </div>
 
-            {/* Decorative Line */}
-            <div className="flex items-center space-x-4 pt-8">
-              <div className="h-px bg-gradient-luxury w-16"></div>
-              <Star className="w-4 h-4 text-primary" />
-              <div className="h-px bg-gradient-luxury w-16"></div>
+            {/* Trust badges */}
+            <div className="flex items-center gap-6 pt-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                Réponse sous 24h
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                Produits premium
+              </div>
             </div>
           </div>
 
           {/* Image */}
-          <div className="relative">
-            <div className="relative overflow-hidden rounded-3xl luxury-shadow animate-float">
+          <div className="relative lg:h-[650px]">
+            <div className="relative h-full overflow-hidden rounded-3xl shadow-luxury">
               <img
                 src={heroImage}
-                alt="Artisan Beauty - Maquillage professionnel"
-                className="w-full h-[600px] object-cover"
+                alt="Artisan Beauty - Maquillage professionnel haut de gamme"
+                className="w-full h-full object-cover"
+                loading="eager"
+                fetchPriority="high"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-transparent" />
             </div>
             
-            {/* Floating Badge */}
-            <div className="absolute -top-6 -right-6 bg-white/90 backdrop-blur-md rounded-full p-6 card-shadow animate-glow">
+            {/* Floating Badge - Experience */}
+            <div className="absolute -top-4 -right-4 lg:top-8 lg:-right-8 bg-card/95 backdrop-blur-md rounded-2xl p-5 shadow-card border border-border/50">
               <div className="text-center">
-                <p className="font-elegant text-2xl font-bold text-primary">15+</p>
-                <p className="text-sm text-muted-foreground">Années d'expérience</p>
+                <p className="font-elegant text-3xl font-bold text-primary">15+</p>
+                <p className="text-sm text-muted-foreground font-medium">Années<br/>d'expérience</p>
+              </div>
+            </div>
+
+            {/* Floating Badge - Clients */}
+            <div className="absolute bottom-8 -left-4 lg:bottom-12 lg:-left-8 bg-card/95 backdrop-blur-md rounded-2xl p-4 shadow-card border border-border/50 flex items-center gap-3">
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div 
+                    key={i} 
+                    className="w-8 h-8 rounded-full bg-gradient-luxury border-2 border-card flex items-center justify-center text-xs text-primary-foreground font-medium"
+                  >
+                    {String.fromCharCode(64 + i)}
+                  </div>
+                ))}
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">500+</p>
+                <p className="text-muted-foreground text-xs">Clientes ravies</p>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 animate-bounce">
+        <span className="text-xs text-muted-foreground uppercase tracking-widest">Scroll</span>
+        <div className="w-px h-8 bg-gradient-to-b from-primary to-transparent" />
       </div>
     </section>
   );
