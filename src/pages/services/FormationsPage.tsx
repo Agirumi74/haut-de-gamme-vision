@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +12,7 @@ import {
   Lightbulb,
   Check,
   ArrowLeft,
-  Target,
-  Loader2
+  Target
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -23,42 +21,11 @@ import FloatingCTA from "@/components/FloatingCTA";
 import ScrollToTop from "@/components/ScrollToTop";
 import ThemeToggle from "@/components/ThemeToggle";
 import AnimatedSection from "@/components/AnimatedSection";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { apiClient } from "@/lib/api";
+import { staticFormations, type Formation } from "@/lib/staticData";
 import formationImage from "@/assets/service-formation.jpg";
 
-interface Formation {
-  id: string;
-  title: string;
-  description: string;
-  duration: number;
-  level: string;
-  price: number;
-  maxStudents: number;
-  isActive: boolean;
-}
-
 const FormationsPage = () => {
-  const [formations, setFormations] = useState<Formation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadFormations = async () => {
-      try {
-        setLoading(true);
-        const data = await apiClient.getFormations();
-        setFormations(data);
-      } catch (err) {
-        setError('Erreur lors du chargement des formations');
-        console.error('Error loading formations:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadFormations();
-  }, []);
+  const formations = staticFormations;
 
   const formatDuration = (hours: number) => {
     if (hours < 1) return `${hours * 60}min`;
@@ -253,18 +220,9 @@ const FormationsPage = () => {
               </p>
             </div>
 
-            {loading ? (
+            {formations.length === 0 ? (
               <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-                <p className="text-muted-foreground">Chargement des formations...</p>
-              </div>
-            ) : error ? (
-              <Alert variant="destructive" className="max-w-md mx-auto">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            ) : formations.length === 0 ? (
-              <div className="text-center py-12">
-                <GraduationCap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <GraduationCap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">Aucune formation disponible pour le moment</p>
               </div>
             ) : (

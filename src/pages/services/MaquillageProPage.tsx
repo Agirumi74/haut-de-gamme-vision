@@ -12,8 +12,7 @@ import {
   Camera,
   Sparkles,
   Check,
-  ArrowLeft,
-  Loader2
+  ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -22,44 +21,17 @@ import FloatingCTA from "@/components/FloatingCTA";
 import ScrollToTop from "@/components/ScrollToTop";
 import ThemeToggle from "@/components/ThemeToggle";
 import AnimatedSection from "@/components/AnimatedSection";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { apiClient } from "@/lib/api";
+import { staticServices, type Service } from "@/lib/staticData";
 import serviceImage from "@/assets/service-makeup.jpg";
 
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: number;
-  isActive: boolean;
-}
-
 const MaquillageProPage = () => {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadServices = async () => {
-      try {
-        setLoading(true);
-        const data = await apiClient.getServices();
-        // Filter services related to makeup
-        const makeupServices = data.filter(service => 
-          service.name.toLowerCase().includes('maquillage')
-        );
-        setServices(makeupServices);
-      } catch (err) {
-        setError('Erreur lors du chargement des services');
-        console.error('Error loading services:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadServices();
-  }, []);
+  // Filter services related to makeup
+  const services = staticServices.filter(service => 
+    service.name.toLowerCase().includes('maquillage') || 
+    service.name.toLowerCase().includes('mariée') ||
+    service.name.toLowerCase().includes('événement') ||
+    service.name.toLowerCase().includes('shooting')
+  );
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -215,18 +187,9 @@ const MaquillageProPage = () => {
               </p>
             </div>
 
-            {loading ? (
+            {services.length === 0 ? (
               <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-                <p className="text-muted-foreground">Chargement des services...</p>
-              </div>
-            ) : error ? (
-              <Alert variant="destructive" className="max-w-md mx-auto">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            ) : services.length === 0 ? (
-              <div className="text-center py-12">
-                <Palette className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <Palette className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">Aucun service de maquillage disponible pour le moment</p>
               </div>
             ) : (
