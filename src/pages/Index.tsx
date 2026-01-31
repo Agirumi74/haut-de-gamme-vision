@@ -14,7 +14,7 @@ import Footer from "@/components/Footer";
 import FloatingCTA from "@/components/FloatingCTA";
 import ScrollToTop from "@/components/ScrollToTop";
 import AnimatedSection from "@/components/AnimatedSection";
-import ThemeToggle from "@/components/ThemeToggle";
+
 
 const Index = () => {
   return (
@@ -54,7 +54,7 @@ const Index = () => {
       <Footer />
       <FloatingCTA />
       <ScrollToTop />
-      <ThemeToggle />
+      
     </div>
   );
 };

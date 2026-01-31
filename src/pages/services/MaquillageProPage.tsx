@@ -19,7 +19,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FloatingCTA from "@/components/FloatingCTA";
 import ScrollToTop from "@/components/ScrollToTop";
-import ThemeToggle from "@/components/ThemeToggle";
+
 import AnimatedSection from "@/components/AnimatedSection";
 import { staticServices, type Service } from "@/lib/staticData";
 import serviceImage from "@/assets/service-makeup.jpg";
@@ -94,7 +94,7 @@ const MaquillageProPage = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      <ThemeToggle />
+      
       
       {/* Hero Section */}
       <section className="relative pt-20 pb-16 bg-gradient-hero overflow-hidden">
