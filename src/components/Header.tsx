@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -59,8 +60,9 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Desktop CTA Button */}
-          <div className="hidden lg:block">
+          {/* Desktop Actions */}
+          <div className="hidden lg:flex items-center space-x-3">
+            <ThemeToggle />
             <Button 
               className="bg-gradient-luxury text-primary-foreground hover:opacity-90 transition-opacity shadow-lg font-medium"
               onClick={() => window.location.href = "/reservation"}
@@ -69,8 +71,9 @@ const Header = () => {
             </Button>
           </div>
 
-          {/* Mobile Menu Button with Sheet */}
-          <div className="lg:hidden">
+          {/* Mobile Actions */}
+          <div className="lg:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button
