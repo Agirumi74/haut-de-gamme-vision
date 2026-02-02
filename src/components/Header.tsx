@@ -1,18 +1,22 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "./ui/button";
-import { Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet";
 import { ThemeToggle } from "./ThemeToggle";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, profile, isAdmin } = useAuth();
 
   const navItems = [
     { label: "Accueil", href: "#" },
     { label: "Services", href: "#services" },
     { label: "Formations", href: "#formations" },
+    { label: "Blog", href: "/blog", isRoute: true },
     { label: "Galerie", href: "#galerie" },
-    { label: "Équipe", href: "#equipe" },
     { label: "Contact", href: "#contact" },
   ];
 
@@ -48,21 +52,48 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8" aria-label="Navigation principale">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="text-foreground hover:text-primary transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1"
-                onClick={() => handleNavClick(item.href)}
-              >
-                {item.label}
-              </a>
-            ))}
+            {navItems.map((item) => 
+              (item as any).isRoute ? (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className="text-foreground hover:text-primary transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="text-foreground hover:text-primary transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1"
+                  onClick={() => handleNavClick(item.href)}
+                >
+                  {item.label}
+                </a>
+              )
+            )}
           </nav>
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-3">
             <ThemeToggle />
+            {user ? (
+              <Link to="/profil">
+                <Avatar className="h-9 w-9 border-2 border-primary/20 hover:border-primary/50 transition-colors cursor-pointer">
+                  <AvatarImage src={profile?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-gradient-luxury text-primary-foreground text-sm">
+                    {profile?.first_name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            ) : (
+              <Button variant="outline" asChild>
+                <Link to="/connexion">
+                  <User className="h-4 w-4 mr-2" />
+                  Connexion
+                </Link>
+              </Button>
+            )}
             <Button 
               className="bg-gradient-luxury text-primary-foreground hover:opacity-90 transition-opacity shadow-lg font-medium"
               onClick={() => window.location.href = "/reservation"}
