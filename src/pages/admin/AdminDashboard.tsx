@@ -1,217 +1,174 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from "@/components/ui/button";
+import { supabase } from '@/integrations/supabase/client';
+import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  LayoutDashboard, 
   GraduationCap, 
   Sparkles, 
   Calendar, 
   Users, 
-  LogOut,
-  Settings,
-  Loader2,
-  ExternalLink
+  FileText,
+  Receipt,
+  MessageCircle,
+  TrendingUp,
+  Euro,
+  Loader2
 } from 'lucide-react';
 
+interface Stats {
+  clients: number;
+  reservations: number;
+  services: number;
+  formations: number;
+  blogPosts: number;
+  pendingComments: number;
+  totalRevenue: number;
+  pendingInvoices: number;
+}
+
 const AdminDashboard = () => {
-  const { user, profile, isAdmin, isLoading, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { isLoading: authLoading } = useAuth();
+  const [stats, setStats] = useState<Stats>({
+    clients: 0,
+    reservations: 0,
+    services: 0,
+    formations: 0,
+    blogPosts: 0,
+    pendingComments: 0,
+    totalRevenue: 0,
+    pendingInvoices: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      navigate('/admin/login');
-    }
-  }, [user, isLoading, navigate]);
+    fetchStats();
+  }, []);
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/admin/login');
+  const fetchStats = async () => {
+    try {
+      const [
+        clientsRes,
+        reservationsRes,
+        servicesRes,
+        formationsRes,
+        postsRes,
+        commentsRes,
+        invoicesRes
+      ] = await Promise.all([
+        supabase.from('clients').select('id', { count: 'exact', head: true }),
+        supabase.from('reservations').select('id', { count: 'exact', head: true }),
+        supabase.from('services').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('formations').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('blog_posts').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+        supabase.from('blog_comments').select('id', { count: 'exact', head: true }).eq('is_approved', false),
+        supabase.from('invoices').select('total, status')
+      ]);
+
+      const invoices = invoicesRes.data || [];
+      const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + Number(i.total), 0);
+      const pendingInvoices = invoices.filter(i => ['draft', 'sent'].includes(i.status)).length;
+
+      setStats({
+        clients: clientsRes.count || 0,
+        reservations: reservationsRes.count || 0,
+        services: servicesRes.count || 0,
+        formations: formationsRes.count || 0,
+        blogPosts: postsRes.count || 0,
+        pendingComments: commentsRes.count || 0,
+        totalRevenue,
+        pendingInvoices
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+    setIsLoading(false);
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center" role="status" aria-label="Chargement">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" aria-hidden="true" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
           <p className="text-muted-foreground">Chargement du tableau de bord...</p>
         </div>
       </div>
     );
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4" role="alert">
-        <Card className="max-w-md w-full card-shadow">
-          <CardContent className="pt-8 text-center space-y-4">
-            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
-              <Settings className="h-8 w-8 text-destructive" aria-hidden="true" />
-            </div>
-            <h2 className="text-2xl font-elegant font-bold">Accès restreint</h2>
-            <p className="text-muted-foreground">
-              Votre compte n'a pas les privilèges administrateur nécessaires pour accéder à cette page.
-            </p>
-            <div className="flex flex-col gap-2 pt-4">
-              <Button onClick={handleLogout} variant="outline" className="w-full">
-                <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
-                Se déconnecter
-              </Button>
-              <Link 
-                to="/"
-                className="text-primary hover:underline text-sm"
-              >
-                Retour au site
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const statCards = [
+    { title: 'Clients', value: stats.clients, icon: Users, color: 'text-blue-500', href: '/admin/clients' },
+    { title: 'Réservations', value: stats.reservations, icon: Calendar, color: 'text-emerald-500', href: '/admin/reservations' },
+    { title: 'Services actifs', value: stats.services, icon: Sparkles, color: 'text-amber-500', href: '/admin/services' },
+    { title: 'Formations', value: stats.formations, icon: GraduationCap, color: 'text-purple-500', href: '/admin/formations' },
+  ];
 
-  const menuItems = [
-    {
-      title: 'Formations',
-      description: 'Gérer les formations et leurs contenus',
-      icon: GraduationCap,
-      href: '/admin/formations',
-      color: 'from-blue-500 to-purple-600'
-    },
-    {
-      title: 'Services',
-      description: 'Gérer les prestations et tarifs',
-      icon: Sparkles,
-      href: '/admin/services',
-      color: 'from-primary to-primary-glow'
-    },
-    {
-      title: 'Réservations',
-      description: 'Voir et gérer les réservations',
-      icon: Calendar,
-      href: '/admin/reservations',
-      color: 'from-emerald-500 to-teal-600'
-    },
-    {
-      title: 'Clients',
-      description: 'Gérer la base de données clients',
-      icon: Users,
-      href: '/admin/clients',
-      color: 'from-orange-500 to-amber-600'
-    }
+  const quickActions = [
+    { title: 'Gérer le blog', description: `${stats.blogPosts} articles publiés`, icon: FileText, href: '/admin/blog', badge: stats.pendingComments > 0 ? `${stats.pendingComments} commentaire(s) en attente` : null },
+    { title: 'Commentaires', description: 'Modérer les commentaires', icon: MessageCircle, href: '/admin/commentaires', badge: stats.pendingComments > 0 ? stats.pendingComments : null },
+    { title: 'Facturation', description: `${stats.pendingInvoices} factures en attente`, icon: Receipt, href: '/admin/factures' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-luxury rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground font-elegant font-bold text-lg">A</span>
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-foreground">
-                  Administration
-                </h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">Artisan Beauty</p>
-              </div>
+    <AdminLayout title="Tableau de bord" description="Vue d'ensemble de votre activité">
+      {/* Revenue Card */}
+      <Card className="mb-6 border-border bg-gradient-to-r from-primary/5 to-primary/10">
+        <CardContent className="py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Chiffre d'affaires total</p>
+              <p className="text-4xl font-bold text-foreground">{stats.totalRevenue.toFixed(2)} €</p>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground hidden md:block">
-                {profile?.first_name} {profile?.last_name}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Déconnexion</span>
-              </Button>
+            <div className="p-4 bg-primary/10 rounded-full">
+              <Euro className="h-8 w-8 text-primary" />
             </div>
           </div>
-        </div>
-      </header>
+        </CardContent>
+      </Card>
 
-      {/* Main Content */}
-      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-elegant font-bold text-foreground mb-2">Tableau de bord</h2>
-          <p className="text-muted-foreground">
-            Gérez votre site web et vos données depuis cette interface.
-          </p>
-        </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {statCards.map((stat) => (
+          <Link key={stat.title} to={stat.href}>
+            <Card className="border-border hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  </div>
+                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
 
-        {/* Quick Actions Grid */}
-        <nav aria-label="Menu principal" className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link 
-                key={item.href} 
-                to={item.href}
-                className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-xl"
-              >
-                <Card className="hover:shadow-luxury transition-all duration-300 h-full border-border/50 hover:border-primary/30">
-                  <CardHeader>
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl bg-gradient-to-r ${item.color} shadow-lg`}>
-                        <Icon className="h-6 w-6 text-white" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl">{item.title}</CardTitle>
-                        <CardDescription className="mt-1">
-                          {item.description}
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </Card>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Quick Links */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Settings className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-              Liens rapides
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link 
-                to="/" 
-                className="flex items-center gap-2 text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-1"
-              >
-                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                Voir le site public
-              </Link>
-              <Link 
-                to="/admin/formations" 
-                className="flex items-center gap-2 text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-1"
-              >
-                <GraduationCap className="h-4 w-4" aria-hidden="true" />
-                Ajouter une formation
-              </Link>
-              <Link 
-                to="/admin/services" 
-                className="flex items-center gap-2 text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-1"
-              >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                Ajouter un service
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+      {/* Quick Actions */}
+      <h2 className="font-elegant text-xl font-semibold text-foreground mb-4">Actions rapides</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {quickActions.map((action) => (
+          <Link key={action.title} to={action.href}>
+            <Card className="border-border hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <action.icon className="h-5 w-5 text-primary" />
+                  {action.badge && (
+                    <span className="px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded-full">
+                      {action.badge}
+                    </span>
+                  )}
+                </div>
+                <CardTitle className="text-lg">{action.title}</CardTitle>
+                <CardDescription>{action.description}</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </AdminLayout>
   );
 };
 

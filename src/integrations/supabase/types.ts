@@ -14,6 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      blog_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_approved: boolean
+          parent_id: string | null
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          parent_id?: string | null
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          parent_id?: string | null
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "blog_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_posts: {
+        Row: {
+          author_id: string
+          category: string | null
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          author_id: string
+          category?: string | null
+          content: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string | null
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           created_at: string
@@ -86,6 +212,123 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_items: {
+        Row: {
+          created_at: string
+          description: string
+          formation_id: string | null
+          id: string
+          invoice_id: string
+          quantity: number
+          service_id: string | null
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          formation_id?: string | null
+          id?: string
+          invoice_id: string
+          quantity?: number
+          service_id?: string | null
+          total: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          formation_id?: string | null
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          service_id?: string | null
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "formations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          paid_at: string | null
+          status: string
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          notes?: string | null
+          paid_at?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          paid_at?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -121,6 +364,130 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      quote_items: {
+        Row: {
+          created_at: string
+          description: string
+          formation_id: string | null
+          id: string
+          quantity: number
+          quote_id: string
+          service_id: string | null
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          formation_id?: string | null
+          id?: string
+          quantity?: number
+          quote_id: string
+          service_id?: string | null
+          total: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          formation_id?: string | null
+          id?: string
+          quantity?: number
+          quote_id?: string
+          service_id?: string | null
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "formations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          client_id: string | null
+          converted_to_invoice_id: string | null
+          created_at: string
+          id: string
+          issue_date: string
+          notes: string | null
+          quote_number: string
+          status: string
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          total: number
+          updated_at: string
+          valid_until: string
+        }
+        Insert: {
+          client_id?: string | null
+          converted_to_invoice_id?: string | null
+          created_at?: string
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          quote_number: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+          valid_until: string
+        }
+        Update: {
+          client_id?: string | null
+          converted_to_invoice_id?: string | null
+          created_at?: string
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          quote_number?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+          valid_until?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_converted_to_invoice_id_fkey"
+            columns: ["converted_to_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reservations: {
         Row: {
@@ -216,6 +583,42 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string
+          id: string
+          is_active: boolean
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          is_active?: boolean
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -242,6 +645,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invoice_number: { Args: never; Returns: string }
+      generate_quote_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
