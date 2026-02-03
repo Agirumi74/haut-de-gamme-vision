@@ -1,33 +1,39 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useAdminServices, useCreateService, useUpdateService, useDeleteService, type Service } from '@/hooks/useServices';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { 
-  ArrowLeft, 
   Plus, 
   Edit, 
   Trash2, 
+  Scissors,
   Loader2,
-  AlertCircle
+  Clock,
+  Euro
 } from 'lucide-react';
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from 'sonner';
 
-const AdminServices = () => {
-  const { profile } = useAuth();
-  const { data: services = [], isLoading, error } = useAdminServices();
-  const createService = useCreateService();
-  const updateService = useUpdateService();
-  const deleteService = useDeleteService();
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  is_active: boolean;
+  created_at: string;
+}
 
+const AdminServices = () => {
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [formData, setFormData] = useState({
@@ -38,14 +44,64 @@ const AdminServices = () => {
     is_active: true
   });
 
+  // Fetch services
+  const { data: services = [], isLoading } = useQuery({
+    queryKey: ['admin-services'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data as Service[];
+    }
+  });
+
+  // Create
+  const createMutation = useMutation({
+    mutationFn: async (data: Omit<Service, 'id' | 'created_at' | 'updated_at'>) => {
+      const { error } = await supabase.from('services').insert(data);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-services'] });
+      toast.success('Service créé');
+      setIsDialogOpen(false);
+      resetForm();
+    },
+    onError: () => toast.error('Erreur lors de la création')
+  });
+
+  // Update
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, ...data }: Partial<Service> & { id: string }) => {
+      const { error } = await supabase.from('services').update(data).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-services'] });
+      toast.success('Service mis à jour');
+      setIsDialogOpen(false);
+      resetForm();
+    },
+    onError: () => toast.error('Erreur lors de la mise à jour')
+  });
+
+  // Delete
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('services').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-services'] });
+      toast.success('Service supprimé');
+    },
+    onError: () => toast.error('Erreur lors de la suppression')
+  });
+
   const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      duration: '',
-      is_active: true
-    });
+    setFormData({ name: '', description: '', price: '', duration: '', is_active: true });
     setEditingService(null);
   };
 
@@ -61,9 +117,8 @@ const AdminServices = () => {
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     const data = {
       name: formData.name.trim(),
       description: formData.description.trim(),
@@ -72,76 +127,78 @@ const AdminServices = () => {
       is_active: formData.is_active
     };
 
-    try {
-      if (editingService) {
-        await updateService.mutateAsync({ id: editingService.id, ...data });
-        toast.success('Service mis à jour avec succès');
-      } else {
-        await createService.mutateAsync(data);
-        toast.success('Service créé avec succès');
-      }
-      setIsDialogOpen(false);
-      resetForm();
-    } catch (err) {
-      toast.error('Erreur lors de la sauvegarde');
+    if (editingService) {
+      updateMutation.mutate({ id: editingService.id, ...data });
+    } else {
+      createMutation.mutate(data);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce service ?')) return;
-
-    try {
-      await deleteService.mutateAsync(id);
-      toast.success('Service supprimé');
-    } catch (err) {
-      toast.error('Erreur lors de la suppression');
+  const handleDelete = (id: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce service ?')) {
+      deleteMutation.mutate(id);
     }
+  };
+
+  const stats = {
+    total: services.length,
+    active: services.filter(s => s.is_active).length,
+    avgPrice: services.length > 0 
+      ? Math.round(services.reduce((sum, s) => sum + s.price, 0) / services.length) 
+      : 0
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Link 
-                to="/admin/dashboard" 
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-                <span>Retour</span>
-              </Link>
-              <h1 className="text-xl font-semibold text-foreground">
-                Gestion des Services
-              </h1>
+    <AdminLayout title="Gestion des Services" description="Gérez vos prestations et tarifs">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Scissors className="h-8 w-8 text-primary" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Total services</p>
+                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              </div>
             </div>
-            <span className="text-sm text-muted-foreground">
-              {profile?.first_name} {profile?.last_name}
-            </span>
-          </div>
-        </div>
-      </header>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Clock className="h-8 w-8 text-success" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Actifs</p>
+                <p className="text-2xl font-bold text-foreground">{stats.active}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Euro className="h-8 w-8 text-info" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Prix moyen</p>
+                <p className="text-2xl font-bold text-foreground">{stats.avgPrice}€</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Main Content */}
-      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" aria-hidden="true" />
-            <AlertDescription>Erreur lors du chargement des services</AlertDescription>
-          </Alert>
-        )}
-
-        <Card className="border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Services</CardTitle>
+      {/* Table */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h3 className="font-semibold text-foreground">Services</h3>
             <Dialog open={isDialogOpen} onOpenChange={(open) => {
               setIsDialogOpen(open);
               if (!open) resetForm();
             }}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-luxury text-primary-foreground">
-                  <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+                  <Plus className="h-4 w-4 mr-2" />
                   Nouveau service
                 </Button>
               </DialogTrigger>
@@ -150,6 +207,9 @@ const AdminServices = () => {
                   <DialogTitle>
                     {editingService ? 'Modifier le service' : 'Nouveau service'}
                   </DialogTitle>
+                  <DialogDescription>
+                    {editingService ? 'Modifiez les détails du service' : 'Ajoutez un nouveau service à votre catalogue'}
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
@@ -209,11 +269,11 @@ const AdminServices = () => {
                     </Button>
                     <Button 
                       type="submit" 
-                      disabled={createService.isPending || updateService.isPending}
+                      disabled={createMutation.isPending || updateMutation.isPending}
                       className="bg-gradient-luxury text-primary-foreground"
                     >
-                      {(createService.isPending || updateService.isPending) && (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
+                      {(createMutation.isPending || updateMutation.isPending) && (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       )}
                       {editingService ? 'Mettre à jour' : 'Créer'}
                     </Button>
@@ -221,74 +281,64 @@ const AdminServices = () => {
                 </form>
               </DialogContent>
             </Dialog>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-              </div>
-            ) : services.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">
-                Aucun service enregistré
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Prix</TableHead>
-                    <TableHead>Durée</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+          </div>
+
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : services.length === 0 ? (
+            <div className="text-center py-8">
+              <Scissors className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Aucun service enregistré</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nom</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Prix</TableHead>
+                  <TableHead>Durée</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {services.map((service) => (
+                  <TableRow key={service.id}>
+                    <TableCell className="font-medium">{service.name}</TableCell>
+                    <TableCell className="max-w-xs truncate">{service.description}</TableCell>
+                    <TableCell>{service.price}€</TableCell>
+                    <TableCell>{service.duration} min</TableCell>
+                    <TableCell>
+                      <Badge variant={service.is_active ? "default" : "secondary"}>
+                        {service.is_active ? 'Actif' : 'Inactif'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(service)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(service.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {services.map((service) => (
-                    <TableRow key={service.id}>
-                      <TableCell className="font-medium">{service.name}</TableCell>
-                      <TableCell className="max-w-xs truncate">{service.description}</TableCell>
-                      <TableCell>{service.price}€</TableCell>
-                      <TableCell>{service.duration} min</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          service.is_active 
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                            : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {service.is_active ? 'Actif' : 'Inactif'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(service)}
-                          >
-                            <Edit className="h-4 w-4" aria-hidden="true" />
-                            <span className="sr-only">Modifier</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(service.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            <span className="sr-only">Supprimer</span>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </AdminLayout>
   );
 };
 
