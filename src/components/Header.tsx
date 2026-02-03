@@ -1,15 +1,25 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "./ui/button";
-import { Menu, User } from "lucide-react";
+import { Menu, User, LogOut, Settings, Shield, ChevronDown, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Skeleton } from "./ui/skeleton";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, profile, isAdmin } = useAuth();
+  const { user, profile, isAdmin, isLoading, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const navItems = [
     { label: "Accueil", href: "#" },
@@ -27,6 +37,31 @@ const Header = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const getUserInitials = () => {
+    if (profile?.first_name) {
+      return profile.first_name.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+
+  const getUserDisplayName = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    }
+    if (profile?.first_name) {
+      return profile.first_name;
+    }
+    return user?.email || "Utilisateur";
+  };
+
   return (
     <header 
       className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border"
@@ -35,8 +70,8 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <a 
-            href="/" 
+          <Link 
+            to="/" 
             className="flex items-center space-x-2 md:space-x-3 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg p-1"
             aria-label="Artisan Beauty - Retour à l'accueil"
           >
@@ -48,7 +83,7 @@ const Header = () => {
                 Artisan Beauty
               </span>
             </div>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8" aria-label="Navigation principale">
@@ -77,26 +112,76 @@ const Header = () => {
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-3">
             <ThemeToggle />
-            {user ? (
-              <Link to="/profil">
-                <Avatar className="h-9 w-9 border-2 border-primary/20 hover:border-primary/50 transition-colors cursor-pointer">
-                  <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-gradient-luxury text-primary-foreground text-sm">
-                    {profile?.first_name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              </Link>
+            
+            {/* Auth State */}
+            {isLoading ? (
+              <Skeleton className="h-9 w-9 rounded-full" />
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-2 px-2 hover:bg-accent"
+                  >
+                    <Avatar className="h-8 w-8 border-2 border-primary/20">
+                      <AvatarImage src={profile?.avatar_url || undefined} />
+                      <AvatarFallback className="bg-gradient-luxury text-primary-foreground text-sm">
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{getUserDisplayName()}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profil" className="flex items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Mon profil
+                    </Link>
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin/dashboard" className="flex items-center cursor-pointer">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Administration
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={handleSignOut}
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Se déconnecter
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button variant="outline" asChild>
-                <Link to="/connexion">
-                  <User className="h-4 w-4 mr-2" />
-                  Connexion
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" asChild>
+                  <Link to="/connexion">
+                    Connexion
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/inscription">
+                    Inscription
+                  </Link>
+                </Button>
+              </div>
             )}
+            
             <Button 
               className="bg-gradient-luxury text-primary-foreground hover:opacity-90 transition-opacity shadow-lg font-medium"
-              onClick={() => window.location.href = "/reservation"}
+              onClick={() => navigate("/reservation")}
             >
               Réserver
             </Button>
@@ -128,22 +213,115 @@ const Header = () => {
                     </div>
                   </div>
 
+                  {/* User Info (if logged in) */}
+                  {!isLoading && user && (
+                    <div className="p-4 border-b border-border bg-accent/50">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 border-2 border-primary/20">
+                          <AvatarImage src={profile?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-luxury text-primary-foreground">
+                            {getUserInitials()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {getUserDisplayName()}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Mobile Navigation Links */}
-                  <nav className="flex-1 py-6 px-4" aria-label="Navigation mobile">
+                  <nav className="flex-1 py-4 px-4 overflow-y-auto" aria-label="Navigation mobile">
                     <ul className="space-y-1">
                       {navItems.map((item) => (
                         <li key={item.label}>
                           <SheetClose asChild>
-                            <a
-                              href={item.href}
-                              className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-all duration-200 font-medium text-base"
-                              onClick={() => handleNavClick(item.href)}
-                            >
-                              {item.label}
-                            </a>
+                            {(item as any).isRoute ? (
+                              <Link
+                                to={item.href}
+                                className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-all duration-200 font-medium text-base"
+                              >
+                                {item.label}
+                              </Link>
+                            ) : (
+                              <a
+                                href={item.href}
+                                className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-all duration-200 font-medium text-base"
+                                onClick={() => handleNavClick(item.href)}
+                              >
+                                {item.label}
+                              </a>
+                            )}
                           </SheetClose>
                         </li>
                       ))}
+
+                      {/* Auth Links for Mobile */}
+                      {!isLoading && user && (
+                        <>
+                          <li className="pt-4 border-t border-border mt-4">
+                            <SheetClose asChild>
+                              <Link
+                                to="/profil"
+                                className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-all duration-200 font-medium text-base"
+                              >
+                                <User className="h-5 w-5 mr-3" />
+                                Mon profil
+                              </Link>
+                            </SheetClose>
+                          </li>
+                          {isAdmin && (
+                            <li>
+                              <SheetClose asChild>
+                                <Link
+                                  to="/admin/dashboard"
+                                  className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-all duration-200 font-medium text-base"
+                                >
+                                  <Shield className="h-5 w-5 mr-3" />
+                                  Administration
+                                </Link>
+                              </SheetClose>
+                            </li>
+                          )}
+                          <li>
+                            <SheetClose asChild>
+                              <button
+                                onClick={handleSignOut}
+                                className="flex items-center w-full px-4 py-3 text-destructive hover:bg-destructive/10 rounded-lg transition-all duration-200 font-medium text-base"
+                              >
+                                <LogOut className="h-5 w-5 mr-3" />
+                                Se déconnecter
+                              </button>
+                            </SheetClose>
+                          </li>
+                        </>
+                      )}
+
+                      {!isLoading && !user && (
+                        <li className="pt-4 border-t border-border mt-4 space-y-2">
+                          <SheetClose asChild>
+                            <Link
+                              to="/connexion"
+                              className="flex items-center justify-center w-full px-4 py-3 text-foreground border border-border hover:bg-accent rounded-lg transition-all duration-200 font-medium text-base"
+                            >
+                              Connexion
+                            </Link>
+                          </SheetClose>
+                          <SheetClose asChild>
+                            <Link
+                              to="/inscription"
+                              className="flex items-center justify-center w-full px-4 py-3 bg-accent text-foreground hover:bg-accent/80 rounded-lg transition-all duration-200 font-medium text-base"
+                            >
+                              Inscription
+                            </Link>
+                          </SheetClose>
+                        </li>
+                      )}
                     </ul>
                   </nav>
 
@@ -152,7 +330,7 @@ const Header = () => {
                     <SheetClose asChild>
                       <Button 
                         className="w-full bg-gradient-luxury text-primary-foreground hover:opacity-90 transition-opacity shadow-lg font-medium py-3"
-                        onClick={() => window.location.href = "/reservation"}
+                        onClick={() => navigate("/reservation")}
                       >
                         Réserver maintenant
                       </Button>
