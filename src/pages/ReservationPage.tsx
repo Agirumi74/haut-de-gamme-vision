@@ -15,9 +15,11 @@ import Footer from "@/components/Footer";
 import { cn } from "@/lib/utils";
 import { staticServices, staticFormations, type Service, type Formation } from "@/lib/staticData";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ReservationPage = () => {
   const { toast } = useToast();
+  const { user, profile, isLoading: authLoading } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedFormation, setSelectedFormation] = useState<Formation | null>(null);
@@ -33,6 +35,19 @@ const ReservationPage = () => {
     telephone: "",
     message: ""
   });
+
+  // Auto-fill customer info from profile when user is logged in
+  useEffect(() => {
+    if (user && profile) {
+      setCustomerInfo(prev => ({
+        ...prev,
+        prenom: profile.first_name || prev.prenom,
+        nom: profile.last_name || prev.nom,
+        email: profile.email || user.email || prev.email,
+        telephone: profile.phone || prev.telephone
+      }));
+    }
+  }, [user, profile]);
 
   // Check URL params for pre-selection
   useEffect(() => {

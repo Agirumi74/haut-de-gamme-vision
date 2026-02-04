@@ -36,6 +36,7 @@ import AdminClients from "./pages/admin/AdminClients";
 import AdminBlog from "./pages/admin/AdminBlog";
 import AdminComments from "./pages/admin/AdminComments";
 import AdminInvoices from "./pages/admin/AdminInvoices";
+import AdminQuotes from "./pages/admin/AdminQuotes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -146,6 +147,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminInvoices />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/devis" 
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminQuotes />
                 </ProtectedRoute>
               } 
             />
