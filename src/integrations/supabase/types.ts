@@ -329,6 +329,45 @@ export type Database = {
           },
         ]
       }
+      media_library: {
+        Row: {
+          alt_text: string | null
+          category: string | null
+          created_at: string | null
+          file_path: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          alt_text?: string | null
+          category?: string | null
+          created_at?: string | null
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          alt_text?: string | null
+          category?: string | null
+          created_at?: string | null
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -583,6 +622,54 @@ export type Database = {
         }
         Relationships: []
       }
+      site_content: {
+        Row: {
+          content: Json
+          id: string
+          page: string
+          section: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json
+          id?: string
+          page: string
+          section: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json
+          id?: string
+          page?: string
+          section?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          category: string
+          id: string
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          category?: string
+          id?: string
+          key: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Update: {
+          category?: string
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           avatar_url: string | null
@@ -616,6 +703,36 @@ export type Database = {
           role?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      theme_settings: {
+        Row: {
+          colors: Json
+          created_at: string | null
+          fonts: Json
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          colors?: Json
+          created_at?: string | null
+          fonts?: Json
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          colors?: Json
+          created_at?: string | null
+          fonts?: Json
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
