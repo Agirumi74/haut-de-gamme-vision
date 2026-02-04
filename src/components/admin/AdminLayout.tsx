@@ -35,6 +35,7 @@ const navigation = [
   { name: "Formations", href: "/admin/formations", icon: GraduationCap },
   { name: "Blog", href: "/admin/blog", icon: FileText },
   { name: "Commentaires", href: "/admin/commentaires", icon: MessageCircle },
+  { name: "Devis", href: "/admin/devis", icon: FileText },
   { name: "Factures", href: "/admin/factures", icon: Receipt },
 ];
 
