@@ -37,6 +37,10 @@ import AdminBlog from "./pages/admin/AdminBlog";
 import AdminComments from "./pages/admin/AdminComments";
 import AdminInvoices from "./pages/admin/AdminInvoices";
 import AdminQuotes from "./pages/admin/AdminQuotes";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminContent from "./pages/admin/AdminContent";
+import AdminMedia from "./pages/admin/AdminMedia";
+import AdminTheme from "./pages/admin/AdminTheme";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -155,6 +159,38 @@ const App = () => (
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminQuotes />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/parametres" 
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminSettings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/contenus" 
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminContent />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/medias" 
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminMedia />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/theme" 
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminTheme />
                 </ProtectedRoute>
               } 
             />

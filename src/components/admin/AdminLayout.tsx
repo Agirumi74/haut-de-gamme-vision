@@ -16,7 +16,10 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
-  Menu
+  Menu,
+  Image,
+  Palette,
+  FileEdit
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -35,8 +38,12 @@ const navigation = [
   { name: "Formations", href: "/admin/formations", icon: GraduationCap },
   { name: "Blog", href: "/admin/blog", icon: FileText },
   { name: "Commentaires", href: "/admin/commentaires", icon: MessageCircle },
-  { name: "Devis", href: "/admin/devis", icon: FileText },
+  { name: "Devis", href: "/admin/devis", icon: FileEdit },
   { name: "Factures", href: "/admin/factures", icon: Receipt },
+  { name: "Contenus", href: "/admin/contenus", icon: FileText },
+  { name: "Médiathèque", href: "/admin/medias", icon: Image },
+  { name: "Thème", href: "/admin/theme", icon: Palette },
+  { name: "Paramètres", href: "/admin/parametres", icon: Settings },
 ];
 
 const AdminLayout = ({ children, title, description }: AdminLayoutProps) => {
