@@ -110,7 +110,7 @@ const AdminContent = () => {
 
         {/* Home Page Content */}
         <TabsContent value="home">
-          <Accordion type="multiple" defaultValue={["hero", "about", "cta"]} className="space-y-4">
+          <Accordion type="multiple" defaultValue={["hero", "about", "services", "cta"]} className="space-y-4">
             {/* Hero Section */}
             <AccordionItem value="hero" className="border border-border rounded-lg px-4">
               <AccordionTrigger className="hover:no-underline">
@@ -121,20 +121,38 @@ const AdminContent = () => {
               </AccordionTrigger>
               <AccordionContent className="space-y-4 pb-4">
                 <div className="space-y-2">
-                  <Label>Titre principal</Label>
+                  <Label>Badge / Accroche</Label>
                   <Input
-                    value={content.home?.hero?.title || ""}
-                    onChange={(e) => updateContent("home", "hero", "title", e.target.value)}
-                    placeholder="L'Excellence du Maquillage Professionnel"
+                    value={content.home?.hero?.badge || ""}
+                    onChange={(e) => updateContent("home", "hero", "badge", e.target.value)}
+                    placeholder="L'artisane de votre beauté"
                   />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Titre principal</Label>
+                    <Input
+                      value={content.home?.hero?.title || ""}
+                      onChange={(e) => updateContent("home", "hero", "title", e.target.value)}
+                      placeholder="Une Approche"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Titre (surligné)</Label>
+                    <Input
+                      value={content.home?.hero?.title_highlight || ""}
+                      onChange={(e) => updateContent("home", "hero", "title_highlight", e.target.value)}
+                      placeholder="Unique & Raffinée"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label>Sous-titre</Label>
+                  <Label>Sous-titre / Description</Label>
                   <Textarea
                     value={content.home?.hero?.subtitle || ""}
                     onChange={(e) => updateContent("home", "hero", "subtitle", e.target.value)}
                     placeholder="Description de votre activité..."
-                    rows={2}
+                    rows={3}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -143,7 +161,7 @@ const AdminContent = () => {
                     <Input
                       value={content.home?.hero?.cta_primary || ""}
                       onChange={(e) => updateContent("home", "hero", "cta_primary", e.target.value)}
-                      placeholder="Réserver maintenant"
+                      placeholder="Découvrir mes services"
                     />
                   </div>
                   <div className="space-y-2">
@@ -151,7 +169,7 @@ const AdminContent = () => {
                     <Input
                       value={content.home?.hero?.cta_secondary || ""}
                       onChange={(e) => updateContent("home", "hero", "cta_secondary", e.target.value)}
-                      placeholder="Découvrir nos services"
+                      placeholder="Voir mon travail"
                     />
                   </div>
                 </div>
@@ -167,27 +185,175 @@ const AdminContent = () => {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="space-y-4 pb-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Titre</Label>
+                    <Input
+                      value={content.home?.about?.title || ""}
+                      onChange={(e) => updateContent("home", "about", "title", e.target.value)}
+                      placeholder="L'Art au Service de"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Titre (surligné)</Label>
+                    <Input
+                      value={content.home?.about?.title_highlight || ""}
+                      onChange={(e) => updateContent("home", "about", "title_highlight", e.target.value)}
+                      placeholder="Votre Beauté"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label>Titre</Label>
-                  <Input
-                    value={content.home?.about?.title || ""}
-                    onChange={(e) => updateContent("home", "about", "title", e.target.value)}
-                    placeholder="Notre Philosophie"
+                  <Label>Paragraphe 1</Label>
+                  <Textarea
+                    value={content.home?.about?.paragraph1 || ""}
+                    onChange={(e) => updateContent("home", "about", "paragraph1", e.target.value)}
+                    placeholder="Premier paragraphe..."
+                    rows={3}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Description</Label>
+                  <Label>Paragraphe 2</Label>
                   <Textarea
-                    value={content.home?.about?.description || ""}
-                    onChange={(e) => updateContent("home", "about", "description", e.target.value)}
-                    placeholder="Décrivez votre philosophie..."
-                    rows={4}
+                    value={content.home?.about?.paragraph2 || ""}
+                    onChange={(e) => updateContent("home", "about", "paragraph2", e.target.value)}
+                    placeholder="Deuxième paragraphe..."
+                    rows={3}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Paragraphe 3</Label>
+                  <Textarea
+                    value={content.home?.about?.paragraph3 || ""}
+                    onChange={(e) => updateContent("home", "about", "paragraph3", e.target.value)}
+                    placeholder="Troisième paragraphe..."
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nom signature</Label>
+                    <Input
+                      value={content.home?.about?.signature_name || ""}
+                      onChange={(e) => updateContent("home", "about", "signature_name", e.target.value)}
+                      placeholder="Marie Dubois"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Titre signature</Label>
+                    <Input
+                      value={content.home?.about?.signature_title || ""}
+                      onChange={(e) => updateContent("home", "about", "signature_title", e.target.value)}
+                      placeholder="Artiste Maquilleuse Professionnelle"
+                    />
+                  </div>
+                </div>
+                <div className="border-t border-border pt-4 mt-4">
+                  <h4 className="font-medium mb-4">Statistiques</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label>Stat 1 (nombre)</Label>
+                      <Input
+                        value={content.home?.about?.stat1_number || ""}
+                        onChange={(e) => updateContent("home", "about", "stat1_number", e.target.value)}
+                        placeholder="15+"
+                      />
+                      <Input
+                        value={content.home?.about?.stat1_label || ""}
+                        onChange={(e) => updateContent("home", "about", "stat1_label", e.target.value)}
+                        placeholder="Années d'expérience"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Stat 2 (nombre)</Label>
+                      <Input
+                        value={content.home?.about?.stat2_number || ""}
+                        onChange={(e) => updateContent("home", "about", "stat2_number", e.target.value)}
+                        placeholder="500+"
+                      />
+                      <Input
+                        value={content.home?.about?.stat2_label || ""}
+                        onChange={(e) => updateContent("home", "about", "stat2_label", e.target.value)}
+                        placeholder="Clientes satisfaites"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Stat 3 (nombre)</Label>
+                      <Input
+                        value={content.home?.about?.stat3_number || ""}
+                        onChange={(e) => updateContent("home", "about", "stat3_number", e.target.value)}
+                        placeholder="100%"
+                      />
+                      <Input
+                        value={content.home?.about?.stat3_label || ""}
+                        onChange={(e) => updateContent("home", "about", "stat3_label", e.target.value)}
+                        placeholder="Produits premium"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Stat 4 (nombre)</Label>
+                      <Input
+                        value={content.home?.about?.stat4_number || ""}
+                        onChange={(e) => updateContent("home", "about", "stat4_number", e.target.value)}
+                        placeholder="4.9/5"
+                      />
+                      <Input
+                        value={content.home?.about?.stat4_label || ""}
+                        onChange={(e) => updateContent("home", "about", "stat4_label", e.target.value)}
+                        placeholder="Note moyenne"
+                      />
+                    </div>
+                  </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
             {/* Services Intro */}
+            <AccordionItem value="services" className="border border-border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="font-semibold">Section Services</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pb-4">
+                <div className="space-y-2">
+                  <Label>Badge</Label>
+                  <Input
+                    value={content.home?.services_intro?.badge || ""}
+                    onChange={(e) => updateContent("home", "services_intro", "badge", e.target.value)}
+                    placeholder="Mes Services"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Titre</Label>
+                    <Input
+                      value={content.home?.services_intro?.title || ""}
+                      onChange={(e) => updateContent("home", "services_intro", "title", e.target.value)}
+                      placeholder="L'Excellence au Service de"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Titre (surligné)</Label>
+                    <Input
+                      value={content.home?.services_intro?.title_highlight || ""}
+                      onChange={(e) => updateContent("home", "services_intro", "title_highlight", e.target.value)}
+                      placeholder="Votre Beauté"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Sous-titre</Label>
+                  <Textarea
+                    value={content.home?.services_intro?.subtitle || ""}
+                    onChange={(e) => updateContent("home", "services_intro", "subtitle", e.target.value)}
+                    placeholder="Description des services..."
+                    rows={3}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
             <AccordionItem value="services" className="border border-border rounded-lg px-4">
               <AccordionTrigger className="hover:no-underline">
                 <div className="flex items-center gap-2">

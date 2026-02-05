@@ -4,9 +4,18 @@ import { Button } from "./ui/button";
 import { Palette, GraduationCap, Crown, Sparkles, Camera, Heart, Loader2 } from "lucide-react";
 import serviceImage1 from "@/assets/service-makeup.jpg";
 import serviceImage2 from "@/assets/service-formation.jpg";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const Services = () => {
   const { data: services = [], isLoading } = useServices();
+  const { data: content } = useSiteContent("home", "services_intro");
+  const servicesContent = content?.services_intro || {};
+
+  // Dynamic content with fallbacks
+  const sectionTitle = servicesContent.title || "L'Excellence au Service de";
+  const sectionTitleHighlight = servicesContent.title_highlight || "Votre Beauté";
+  const sectionSubtitle = servicesContent.subtitle || "Chaque prestation est une œuvre d'art personnalisée. J'utilise exclusivement des produits haut de gamme, hypoallergéniques et respectueux de votre peau pour un résultat impeccable et durable.";
+  const sectionBadge = servicesContent.badge || "Mes Services";
 
   const getServiceIcon = (name: string) => {
     const lowerName = name.toLowerCase();
@@ -52,21 +61,19 @@ const Services = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
           <span className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium tracking-wide uppercase mb-6">
-            Mes Services
+            {sectionBadge}
           </span>
           <h2 
             id="services-heading"
             className="font-elegant text-4xl lg:text-5xl font-bold text-foreground mb-6"
           >
-            L'Excellence au Service de
+            {sectionTitle}
             <span className="block bg-gradient-luxury bg-clip-text text-transparent mt-2">
-              Votre Beauté
+              {sectionTitleHighlight}
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Chaque prestation est une œuvre d'art personnalisée. J'utilise exclusivement 
-            des produits haut de gamme, hypoallergéniques et respectueux de votre 
-            peau pour un résultat impeccable et durable.
+            {sectionSubtitle}
           </p>
         </div>
 
