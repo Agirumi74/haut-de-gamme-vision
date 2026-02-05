@@ -1,8 +1,20 @@
 import { Button } from "./ui/button";
 import { Star, ArrowRight, Play } from "lucide-react";
 import heroImage from "@/assets/hero-beauty.jpg";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const Hero = () => {
+  const { data: content } = useSiteContent("home", "hero");
+  const heroContent = content?.hero || {};
+
+  // Use dynamic content with fallbacks
+  const title = heroContent.title || "Une Approche";
+  const titleHighlight = heroContent.title_highlight || "Unique & Raffinée";
+  const subtitle = heroContent.subtitle || "Passionnée par l'art du maquillage et la transmission, je vous accompagne avec bienveillance pour révéler votre beauté naturelle et développer votre confiance.";
+  const badge = heroContent.badge || "L'artisane de votre beauté";
+  const ctaPrimary = heroContent.cta_primary || "Découvrir mes services";
+  const ctaSecondary = heroContent.cta_secondary || "Voir mon travail";
+
   return (
     <section 
       className="relative min-h-screen flex items-center pt-20 overflow-hidden"
@@ -21,7 +33,7 @@ const Hero = () => {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse" aria-hidden="true" />
                 <span className="text-primary font-medium text-sm tracking-wide uppercase">
-                  L'artisane de votre beauté
+                  {badge}
                 </span>
               </div>
               
@@ -29,15 +41,14 @@ const Hero = () => {
                 id="hero-heading"
                 className="font-elegant text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-[1.1]"
               >
-                Une Approche
+                {title}
                 <span className="block bg-gradient-luxury bg-clip-text text-transparent mt-2">
-                  Unique & Raffinée
+                  {titleHighlight}
                 </span>
               </h1>
               
               <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Passionnée par l'art du maquillage et la transmission, je vous accompagne avec 
-                bienveillance pour révéler votre beauté naturelle et développer votre confiance.
+                {subtitle}
               </p>
             </div>
 
@@ -62,7 +73,7 @@ const Hero = () => {
                 className="bg-gradient-luxury text-primary-foreground hover:opacity-90 shadow-luxury group text-base px-8"
                 onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Découvrir mes services
+                {ctaPrimary}
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Button>
               <Button 
@@ -72,7 +83,7 @@ const Hero = () => {
                 onClick={() => document.getElementById('galerie')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" aria-hidden="true" />
-                Voir mon travail
+                {ctaSecondary}
               </Button>
             </div>
 

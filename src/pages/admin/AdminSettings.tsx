@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Save, Globe, Phone, Clock, Share2, Loader2 } from "lucide-react";
+import BackupRestore from "@/components/admin/BackupRestore";
 
 interface Setting {
   id: string;
@@ -92,10 +93,11 @@ const AdminSettings = () => {
   return (
     <AdminLayout title="Paramètres" description="Configuration générale du site">
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
+        <TabsList className="grid w-full grid-cols-4 max-w-lg">
           <TabsTrigger value="general">Général</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
           <TabsTrigger value="social">Réseaux</TabsTrigger>
+          <TabsTrigger value="backup">Sauvegarde</TabsTrigger>
         </TabsList>
 
         {/* General Settings */}
@@ -245,6 +247,11 @@ const AdminSettings = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Backup/Restore */}
+        <TabsContent value="backup">
+          <BackupRestore />
         </TabsContent>
       </Tabs>
 
