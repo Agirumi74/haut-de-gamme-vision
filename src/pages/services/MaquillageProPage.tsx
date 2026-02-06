@@ -115,7 +115,7 @@ const MaquillageProPage = () => {
                   
                   <h1 className="font-elegant text-4xl lg:text-6xl font-bold text-foreground">
                     Maquillage
-                    <span className="block bg-gradient-luxury bg-clip-text text-transparent">
+                    <span className="block text-gradient-luxury">
                       Professionnel
                     </span>
                   </h1>

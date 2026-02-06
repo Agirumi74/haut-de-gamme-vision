@@ -92,7 +92,7 @@ const Gallery = () => {
           </span>
           <h2 className="font-elegant text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Mes Créations
-            <span className="block bg-gradient-luxury bg-clip-text text-transparent mt-2">
+            <span className="block text-gradient-luxury mt-2">
               Artistiques
             </span>
           </h2>

@@ -65,7 +65,7 @@ const Team = () => {
           </p>
           <h2 className="font-elegant text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Les Artistes de
-            <span className="block bg-gradient-luxury bg-clip-text text-transparent">
+            <span className="block text-gradient-luxury">
               Votre Beauté
             </span>
           </h2>

@@ -50,7 +50,7 @@ const About = () => {
               </p>
               <h2 className="font-elegant text-4xl lg:text-5xl font-bold text-foreground">
                 {title}
-                <span className="block bg-gradient-luxury bg-clip-text text-transparent">
+                <span className="block text-gradient-luxury">
                   {titleHighlight}
                 </span>
               </h2>

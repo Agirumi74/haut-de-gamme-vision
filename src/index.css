@@ -217,7 +217,7 @@
 ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer components {
-  /* Luxury Gradient Backgrounds */
+  /* Luxury Gradient Backgrounds - for buttons, badges, cards */
   .bg-gradient-luxury {
     background: linear-gradient(
       135deg,
@@ -225,8 +225,6 @@
       hsl(38 85% 50%),
       hsl(15 60% 55%)
     );
-    -webkit-background-clip: text;
-    background-clip: text;
   }
 
   .dark .bg-gradient-luxury {
@@ -236,8 +234,33 @@
       hsl(45 85% 60%),
       hsl(20 65% 55%)
     );
+  }
+
+  /* Luxury Gradient Text - for highlighted text */
+  .text-gradient-luxury {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(38 85% 50%),
+      hsl(15 60% 55%)
+    );
     -webkit-background-clip: text;
     background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .dark .text-gradient-luxury {
+    background: linear-gradient(
+      135deg,
+      hsl(45 100% 70%),
+      hsl(38 90% 65%),
+      hsl(25 80% 60%)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
   .bg-gradient-hero {

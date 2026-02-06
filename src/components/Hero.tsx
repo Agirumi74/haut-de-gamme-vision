@@ -42,7 +42,7 @@ const Hero = () => {
                 className="font-elegant text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-[1.1]"
               >
                 {title}
-                <span className="block bg-gradient-luxury bg-clip-text text-transparent mt-2">
+                <span className="block text-gradient-luxury mt-2">
                   {titleHighlight}
                 </span>
               </h1>
