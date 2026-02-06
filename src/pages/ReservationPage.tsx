@@ -201,7 +201,7 @@ const ReservationPage = () => {
           </span>
           <h1 className="font-elegant text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Réservez Votre
-            <span className="block bg-gradient-luxury bg-clip-text text-transparent mt-2">
+            <span className="block text-gradient-luxury mt-2">
               Séance Beauté
             </span>
           </h1>

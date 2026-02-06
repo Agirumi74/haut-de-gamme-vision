@@ -56,7 +56,7 @@ const Newsletter = () => {
                     
                     <h2 className="font-elegant text-3xl lg:text-4xl font-bold text-foreground">
                       Rejoignez ma
-                      <span className="block bg-gradient-luxury bg-clip-text text-transparent">
+                      <span className="block text-gradient-luxury">
                         Communauté Beauté
                       </span>
                     </h2>

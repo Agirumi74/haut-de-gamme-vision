@@ -104,7 +104,7 @@ const Formations = () => {
             className="font-elegant text-4xl lg:text-5xl font-bold text-foreground mb-6"
           >
             Libérez Votre
-            <span className="block bg-gradient-luxury bg-clip-text text-transparent mt-2">
+            <span className="block text-gradient-luxury mt-2">
               Potentiel Créatif
             </span>
           </h2>
