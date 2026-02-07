@@ -34,6 +34,7 @@ import AdminServices from "./pages/admin/AdminServices";
 import AdminReservations from "./pages/admin/AdminReservations";
 import AdminClients from "./pages/admin/AdminClients";
 import AdminBlog from "./pages/admin/AdminBlog";
+import AdminBlogCategories from "./pages/admin/AdminBlogCategories";
 import AdminComments from "./pages/admin/AdminComments";
 import AdminInvoices from "./pages/admin/AdminInvoices";
 import AdminQuotes from "./pages/admin/AdminQuotes";
@@ -41,6 +42,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminMedia from "./pages/admin/AdminMedia";
 import AdminTheme from "./pages/admin/AdminTheme";
+import AdminTeam from "./pages/admin/AdminTeam";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -139,10 +141,26 @@ const App = () => (
               } 
             />
             <Route 
+              path="/admin/blog-categories" 
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminBlogCategories />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/admin/commentaires" 
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminComments />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/equipe" 
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminTeam />
                 </ProtectedRoute>
               } 
             />
