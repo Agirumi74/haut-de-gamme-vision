@@ -19,7 +19,8 @@ import {
   Menu,
   Image,
   Palette,
-  FileEdit
+  FileEdit,
+  Tag
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,9 @@ const navigation = [
   { name: "Clients", href: "/admin/clients", icon: Users },
   { name: "Services", href: "/admin/services", icon: Scissors },
   { name: "Formations", href: "/admin/formations", icon: GraduationCap },
+  { name: "Équipe", href: "/admin/equipe", icon: Users },
   { name: "Blog", href: "/admin/blog", icon: FileText },
+  { name: "Catégories Blog", href: "/admin/blog-categories", icon: Tag },
   { name: "Commentaires", href: "/admin/commentaires", icon: MessageCircle },
   { name: "Devis", href: "/admin/devis", icon: FileEdit },
   { name: "Factures", href: "/admin/factures", icon: Receipt },
