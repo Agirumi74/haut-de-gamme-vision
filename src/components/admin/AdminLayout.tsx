@@ -1,9 +1,10 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   LayoutDashboard,
   Calendar,
@@ -16,13 +17,18 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  ChevronDown,
   Menu,
   Image,
   Palette,
   FileEdit,
-  Tag
+  Tag,
+  Newspaper,
+  ShoppingBag,
+  Briefcase,
+  PenTool,
+  UserCheck
 } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface AdminLayoutProps {
@@ -31,22 +37,70 @@ interface AdminLayoutProps {
   description?: string;
 }
 
-const navigation = [
-  { name: "Tableau de bord", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "Réservations", href: "/admin/reservations", icon: Calendar },
-  { name: "Clients", href: "/admin/clients", icon: Users },
-  { name: "Services", href: "/admin/services", icon: Scissors },
-  { name: "Formations", href: "/admin/formations", icon: GraduationCap },
-  { name: "Équipe", href: "/admin/equipe", icon: Users },
-  { name: "Blog", href: "/admin/blog", icon: FileText },
-  { name: "Catégories Blog", href: "/admin/blog-categories", icon: Tag },
-  { name: "Commentaires", href: "/admin/commentaires", icon: MessageCircle },
-  { name: "Devis", href: "/admin/devis", icon: FileEdit },
-  { name: "Factures", href: "/admin/factures", icon: Receipt },
-  { name: "Contenus", href: "/admin/contenus", icon: FileText },
-  { name: "Médiathèque", href: "/admin/medias", icon: Image },
-  { name: "Thème", href: "/admin/theme", icon: Palette },
-  { name: "Paramètres", href: "/admin/parametres", icon: Settings },
+interface NavGroup {
+  name: string;
+  icon: any;
+  items: NavItem[];
+}
+
+interface NavItem {
+  name: string;
+  href: string;
+  icon: any;
+}
+
+const navigationGroups: NavGroup[] = [
+  {
+    name: "Tableau de bord",
+    icon: LayoutDashboard,
+    items: [
+      { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    ]
+  },
+  {
+    name: "Blog",
+    icon: Newspaper,
+    items: [
+      { name: "Articles", href: "/admin/blog", icon: FileText },
+      { name: "Catégories", href: "/admin/blog-categories", icon: Tag },
+      { name: "Commentaires", href: "/admin/commentaires", icon: MessageCircle },
+    ]
+  },
+  {
+    name: "Catalogue",
+    icon: ShoppingBag,
+    items: [
+      { name: "Services", href: "/admin/services", icon: Scissors },
+      { name: "Formations", href: "/admin/formations", icon: GraduationCap },
+    ]
+  },
+  {
+    name: "Business",
+    icon: Briefcase,
+    items: [
+      { name: "Réservations", href: "/admin/reservations", icon: Calendar },
+      { name: "Clients", href: "/admin/clients", icon: Users },
+      { name: "Devis", href: "/admin/devis", icon: FileEdit },
+      { name: "Factures", href: "/admin/factures", icon: Receipt },
+    ]
+  },
+  {
+    name: "Site & CMS",
+    icon: PenTool,
+    items: [
+      { name: "Contenus", href: "/admin/contenus", icon: FileText },
+      { name: "Équipe", href: "/admin/equipe", icon: UserCheck },
+      { name: "Médiathèque", href: "/admin/medias", icon: Image },
+      { name: "Thème", href: "/admin/theme", icon: Palette },
+    ]
+  },
+  {
+    name: "Configuration",
+    icon: Settings,
+    items: [
+      { name: "Paramètres", href: "/admin/parametres", icon: Settings },
+    ]
+  },
 ];
 
 const AdminLayout = ({ children, title, description }: AdminLayoutProps) => {
@@ -54,10 +108,25 @@ const AdminLayout = ({ children, title, description }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const { profile, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [openGroups, setOpenGroups] = useState<string[]>(
+    navigationGroups.map(g => g.name) // All groups open by default
+  );
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const toggleGroup = (groupName: string) => {
+    setOpenGroups(prev => 
+      prev.includes(groupName) 
+        ? prev.filter(g => g !== groupName)
+        : [...prev, groupName]
+    );
+  };
+
+  const isGroupActive = (group: NavGroup) => {
+    return group.items.some(item => location.pathname === item.href);
   };
 
   return (
@@ -91,23 +160,81 @@ const AdminLayout = ({ children, title, description }: AdminLayoutProps) => {
 
         {/* Navigation */}
         <ScrollArea className="flex-1 py-4">
-          <nav className="space-y-1 px-2">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
+          <nav className="space-y-2 px-2">
+            {navigationGroups.map((group) => {
+              const isActive = isGroupActive(group);
+              const isOpen = openGroups.includes(group.name);
+
+              // Single item group (like Dashboard)
+              if (group.items.length === 1) {
+                const item = group.items[0];
+                const itemActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={group.name}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+                      itemActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {sidebarOpen && <span className="font-medium">{item.name}</span>}
+                  </Link>
+                );
+              }
+
+              // Multi-item group
               return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
+                <Collapsible
+                  key={group.name}
+                  open={sidebarOpen && isOpen}
+                  onOpenChange={() => sidebarOpen && toggleGroup(group.name)}
                 >
-                  <item.icon className="h-5 w-5 shrink-0" />
-                  {sidebarOpen && <span className="font-medium">{item.name}</span>}
-                </Link>
+                  <CollapsibleTrigger asChild>
+                    <button
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      )}
+                    >
+                      <group.icon className="h-5 w-5 shrink-0" />
+                      {sidebarOpen && (
+                        <>
+                          <span className="font-semibold flex-1">{group.name}</span>
+                          <ChevronDown className={cn(
+                            "h-4 w-4 transition-transform",
+                            isOpen && "rotate-180"
+                          )} />
+                        </>
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-1 ml-4 space-y-1">
+                    {group.items.map((item) => {
+                      const itemActive = location.pathname === item.href;
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
+                            itemActive
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                          )}
+                        >
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          <span>{item.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </Collapsible>
               );
             })}
           </nav>
